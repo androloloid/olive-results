@@ -125,8 +125,9 @@ class LiveResultReq {
     }
     suspend fun getClassResults(competitionId:Int, className:String, lastHash:String) : ClassResults {
         //api.php?method=getclassresults&comp=10259&unformattedTimes=true&class=Öppen-1
+        val urlClassName = java.net.URLEncoder.encode(className, "UTF-8")
         var jsonString =
-            liveResultRequest("api.php?method=getclassresults&comp=" + competitionId + "&unformattedTimes=true&class=" + className + "&last_hash=" + lastHash)
+            liveResultRequest("api.php?method=getclassresults&comp=" + competitionId + "&unformattedTimes=true&class=" + urlClassName + "&last_hash=" + lastHash)
         if (jsonString == null) {
             return ClassResults("Error", "", emptyList(), emptyList(), hash="")
         }
@@ -139,8 +140,10 @@ class LiveResultReq {
     }
     suspend fun getClubResults(competitionId:Int, clubName:String, lastHash:String) : ClubResults {
         //api.php?method=getclubresults&comp=10259&unformattedTimes=true&club=Öppen
+        // convert clubname to url parameter and replace special characters
+        val urlClubName = java.net.URLEncoder.encode(clubName, "UTF-8")
         var jsonString =
-            liveResultRequest("api.php?method=getclubresults&comp=" + competitionId + "&unformattedTimes=true&club=" + clubName + "&last_hash=" + lastHash)
+            liveResultRequest("api.php?method=getclubresults&comp=" + competitionId + "&unformattedTimes=true&club=" + urlClubName + "&last_hash=" + lastHash)
         if (jsonString == null) {
             return ClubResults("Error", "", emptyList(),  hash="")
         }

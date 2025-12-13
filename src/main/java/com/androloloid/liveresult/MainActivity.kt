@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
@@ -31,14 +32,16 @@ import com.androloloid.liveresult.ui.theme.LiveResultTheme
 // Sealed class to represent the navigation destinations
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
     object Competitions : Screen("competitions", "Competitions", Icons.Default.List)
-    object LiveResults : Screen("liveresults", "Live Results", Icons.Default.Person)
-    object Favorite : Screen("favorite", "Favorite", Icons.Default.Favorite)
+    object LiveResults : Screen("liveresults", "Class Results", Icons.Default.Person)
+    object ClubResults : Screen("clubresults", "Club Results", Icons.Default.Favorite)
+//    object Favorite : Screen("favorite", "Favorite", Icons.Default.Favorite)
 }
 
 val items = listOf(
     Screen.Competitions,
     Screen.LiveResults,
-    Screen.Favorite
+    Screen.ClubResults,
+ //   Screen.Favorite
 )
 
 class MainActivity : ComponentActivity() {
@@ -88,7 +91,8 @@ fun MainScreen() {
         NavHost(navController, startDestination = Screen.Competitions.route, Modifier.padding(innerPadding)) {
             composable(Screen.Competitions.route) { CompetitionScreen(navController, competitionViewModel) }
             composable(Screen.LiveResults.route) { LiveResultsScreen(navController, competitionViewModel) }
-            composable(Screen.Favorite.route) { FavoriteScreen(navController, competitionViewModel) }
+            composable(Screen.ClubResults.route) { ClubResultsScreen(navController, competitionViewModel) }
+       //     composable(Screen.Favorite.route) { FavoriteScreen(navController, competitionViewModel) }
         }
     }
 }

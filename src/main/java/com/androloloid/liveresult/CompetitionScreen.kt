@@ -1,8 +1,5 @@
 package com.androloloid.liveresult
 
-import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,13 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
@@ -36,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
@@ -44,6 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.androloloid.liveresult.data.Competition
 import com.androloloid.liveresult.data.Competitions
+import kotlinx.coroutines.delay
+import androidx.compose.material3.CircularProgressIndicator
 
 //https://medium.com/@anu91ch/scan-qr-code-bar-code-android-kotlin-tutorial-using-ml-kit-f76b48e3289b
 
@@ -51,6 +52,7 @@ import com.androloloid.liveresult.data.Competitions
 fun CompetitionScreen(navController: NavController, viewModel: CompetitionViewModel) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     val listState = rememberLazyListState()
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(
         modifier = Modifier
@@ -58,24 +60,28 @@ fun CompetitionScreen(navController: NavController, viewModel: CompetitionViewMo
             .padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            ScanButton(
-                onClick = { /*TODO*/ },
-                isLoading = viewModel.isLoading,
-                modifier = Modifier
-            )
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 modifier = Modifier.weight(1f),
                 placeholder = { Text("Search") },
                 singleLine = true,
+                leadingIcon = {
+                    Icon(
+                        Icons.Filled.Search,
+                        contentDescription = "Search",
+                        //modifier = Modifier.clickable { searchQuery = TextFieldValue("") }
+                    )
+                },
+                trailingIcon = {
+                    Icon(
+                        Icons.Filled.Clear,
+                        contentDescription = "Clear",
+                        modifier = Modifier.clickable { searchQuery = TextFieldValue(""); keyboardController?.hide()}
+                    )
+                },
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(onSearch = { })
-            )
-            RefreshButton(
-                onClick = { viewModel.loadCompetitions() },
-                isLoading = viewModel.isLoading,
-                modifier = Modifier
             )
         }
 
@@ -125,7 +131,15 @@ fun CompetitionList(
             modifier = modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            Text("Press Refresh to load competitions.")
+            if (viewModel.isLoading) {
+                LoopingCircle2()
+            } else {
+                RefreshButton(
+                    onClick = { viewModel.loadCompetitions() },
+                    isLoading = viewModel.isLoading,
+                    modifier = Modifier
+                )
+            }
         }
     } else {
 
@@ -159,6 +173,24 @@ fun CompetitionList(
             }
         }
     }
+}
+@Composable
+fun LoopingCircle2() {
+    // display a picture of animated gif drawable/runner.gif
+    var currentProgress by remember { mutableStateOf(0f) }
+    // create a circular progress indicator looping indefinitly
+    LaunchedEffect(Unit) {
+        while (true) {
+            currentProgress = (currentProgress + 0.05f) % 1f
+            delay(100)
+        }
+    }
+    CircularProgressIndicator(
+        progress = { currentProgress },
+        modifier = Modifier
+            .width(128.dp)
+            .padding(vertical = 6.dp)
+    )
 }
 
 @Composable

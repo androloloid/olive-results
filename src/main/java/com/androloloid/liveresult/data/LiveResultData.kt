@@ -222,6 +222,13 @@ data class ClubResults(
 data class SplitControl(
     val code: Int,
     val name: String)
+
+class Split(val code: String,
+            val time: String,
+            val status: Int,
+            val place: String,
+            val timeplus: String)
+
 @SuppressLint("UnsafeOptInUsageError")
 @Serializable
 data class RunnerResult(
@@ -236,7 +243,6 @@ data class RunnerResult(
     private val start: Long,
     private val splits: Map<String, MyInt>? = null
 ) {
-
     private fun getTimeFromString(t: String): String {
         val tSeconds = try {
             // The API can return time in centiseconds as a string, or an already formatted time string
@@ -301,6 +307,30 @@ data class RunnerResult(
         return name.replaceFirstChar({ if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() })
     }
 
+    fun hasSplits() : Boolean { return splits != null && splits.isNotEmpty() }
+
+    fun getSplits(splitcontrols: List<SplitControl>?) : List<Split> {
+        var splitList = mutableListOf<Split>()
+        if (splits != null && splitcontrols != null) {
+            for (ctrl in splitcontrols) {
+                //  "splitcontrols": [{ "code": 1110, "name": "(110)"},
+                val code = ctrl.code.toString()
+                // splits: [{  "1110": 118300,"1110_status": 0,"1110_place": 1,"1110_timeplus": 0,
+                val splitResult = splits.get(code)?.invoke()
+                val splitStatus = splits.get(code+"_status")?.invoke()
+                val splitPlace = splits.get(code+"_place")?.invoke()
+                val splitTimePlus = splits.get(code+"_timeplus")?.invoke()
+                if (splitResult != null && splitStatus != null && splitPlace != null && splitTimePlus != null) {
+                    splitList.add(Split(ctrl.name,
+                        getTimeFromString(splitResult.toString()),
+                        splitStatus,
+                        splitPlace.toString(),
+                        getTimeFromString(splitTimePlus.toString())))
+                }
+            }
+        }
+        return splitList
+    }
 
     /* status mapping from int to string
 0 - OK
