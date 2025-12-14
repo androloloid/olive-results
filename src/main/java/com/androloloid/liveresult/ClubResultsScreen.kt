@@ -1,12 +1,14 @@
 package com.androloloid.liveresult
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -39,8 +42,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.delay
@@ -79,7 +84,8 @@ fun ClubResultsScreen(navController: NavController, viewModel: CompetitionViewMo
                     enabled = !viewModel.isLoadingClubs,
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
-                    placeholder = { Text("Search Club") },
+                    placeholder = { Text(stringResource(id = R.string.search_club)) },
+                    label = { Text(stringResource(id = R.string.search)) },
                     singleLine = true,
                     leadingIcon = {
                         Icon(
@@ -105,7 +111,16 @@ fun ClubResultsScreen(navController: NavController, viewModel: CompetitionViewMo
                     println("### results changed selectedClubsResults.size=${viewModel.selectedClubsResults.size}")
                     LazyColumn(modifier = Modifier.fillMaxSize().weight(1f)) {
                         items(viewModel.selectedClubsResults) { result ->
-                            ResultItem(viewModel = viewModel, result = result, classResults=null, modifier = Modifier, language = "en")
+                            ResultItem(
+                                viewModel = viewModel,
+                                result = result,
+                                classResults = null,
+                                modifier = Modifier
+                            )
+                        }
+                        // add an empty item to push the floating action button to the bottom of the screen
+                        item {
+                            Spacer(modifier = Modifier.height(100.dp))
                         }
                     }
                 } else {
@@ -113,22 +128,58 @@ fun ClubResultsScreen(navController: NavController, viewModel: CompetitionViewMo
                         modifier = Modifier.fillMaxSize().weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (viewModel.isLoadingClubs) {
-                            Text("Loading clubs...")
-                        } else if (viewModel.isLoadingClubsResults) {
-                            Text("Loading results...")
+                        if (viewModel.isLoadingClubs || viewModel.isLoadingClubsResults) {
+                           // pass
                         } else if (viewModel.selectedClubs.isNotEmpty()) {
-                            Text("No results to display.")
+                            Text(stringResource(R.string.no_results))
                         } else {
-                            Text("Please select a club to see results.\n  ${viewModel.clubs.size} clubs loaded")
+                            Text(stringResource(R.string.enter_club) + "\n${viewModel.clubs.size} " + stringResource(R.string.clubs_loaded), textAlign = TextAlign.Center)
                         }
                     }
                 }
             } else {
                 Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
-                    Text("No competition selected")
+                    Text(stringResource(R.string.no_competition_selected))
                 }
             }
         }
     }
+    // overlay a circleloop2 in the middle of the screen when loadingCLubResuts is true
+    if (viewModel.isLoadingClubsResults) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                CircularProgressIndicator()
+                if (viewModel.selectedClubsResults.isEmpty()) {
+                    Text(stringResource(R.string.loading_results))
+                }
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+    } else if (viewModel.isLoadingClubs) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                CircularProgressIndicator()
+                Text(stringResource(R.string.loading_clubs))
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+    }
+
+
 }

@@ -1,0 +1,193 @@
+package com.androloloid.liveresult
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.androloloid.liveresult.data.ClassResults
+import com.androloloid.liveresult.data.RunnerResult
+//import com.androloloid.liveresult.R // Make sure to import your app's R class
+
+
+fun toLowerCamelCase(input: String): String {
+    val words = input.lowercase().split(' ').joinToString(" ") {
+        if (it.isNotEmpty()) it.replaceFirstChar(Char::titlecaseChar) else it
+    }
+    return words
+}
+
+@Composable
+fun getStatusStringResource(status: Int): String {
+    val resourceId = when (status) {
+        0 -> R.string.status_OK
+        1 -> R.string.status_DNS
+        2 -> R.string.status_DNF
+        3 -> R.string.status_MP
+        4 -> R.string.status_DSQ
+        5 -> R.string.status_out_of_time
+        9, 10 -> R.string.status_not_started_yet
+        11 -> R.string.status_walk_over
+        12 -> R.string.status_move_up
+        else -> R.string.status_Unknown
+    }
+    return stringResource(id = resourceId)
+}
+
+@Composable
+fun ResultItem(viewModel: CompetitionViewModel, result: RunnerResult, classResults: ClassResults?, modifier: Modifier) {
+    var expandedRow by remember { mutableStateOf(false) }
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        onClick = { expandedRow = !expandedRow },
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.fillMaxHeight()) {
+                Spacer(modifier = Modifier.weight(1f))
+                CircleChar( result.getPlace(), result.getStatus())
+                Spacer(modifier = Modifier.weight(1f))
+            }
+            Spacer(modifier = Modifier.width(5.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Row(modifier = Modifier) {
+                    val name = toLowerCamelCase(result.getName())
+                    Text(
+                        text = name,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(modifier = Modifier) {
+                    if (classResults == null) {
+                        Text(text = viewModel.runnersClass[result.getName()] ?: "",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
+                    Text(
+                        text = result.clubName,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(5.dp))
+            // compute the column width so the text "22:22:22" using the default font with bold style can fit the column
+            Column(modifier = Modifier) {
+                Row(modifier = Modifier) {
+                    var label = result.getResult()
+                    if (result.getStatus() != 0) {
+                        label = ""
+                    }
+                    Text(
+                        label,
+                        fontWeight = FontWeight.Bold,
+                        softWrap = false
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(modifier = Modifier) {
+                    Text(
+                        text = result.getTimePlus(),
+                        style = MaterialTheme.typography.bodySmall,
+                        softWrap = false
+                    )
+                }
+            }
+        }
+        if (expandedRow && result.hasSplits()) {
+            Row(
+                modifier = Modifier
+                    .padding(start = 16.dp, end = 16.dp, bottom=16.dp, top = 0.dp  )
+                    .fillMaxWidth()
+            ) {
+                for(split in result.getSplits(classResults?.splitcontrols)) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 5.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally)                        
+                    {
+                        Text(
+                            text = split.code,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodySmall,
+                            softWrap = false
+                        )
+                        Text(
+                            text = if (split.status == 0) { split.time + "("+split.place+")" } else { split.time },
+                            style = MaterialTheme.typography.bodySmall,
+                            softWrap = false
+                        )
+                        Text(
+                            text = "+"+split.timeplus,
+                            style = MaterialTheme.typography.bodySmall,
+                            softWrap = false
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable
+fun CircleChar(text: String, runner_status_id: Int, modifier: Modifier = Modifier) {
+    var label = text
+    var txtColor = MaterialTheme.colorScheme.onPrimary
+    var bgColor = MaterialTheme.colorScheme.primary
+    // if text is not an int set the color to secondary
+    if (runner_status_id != 0) {
+        label = getStatusStringResource(runner_status_id)
+        txtColor = MaterialTheme.colorScheme.onSurface
+        bgColor = MaterialTheme.colorScheme.surface
+    }
+    // TODO start time
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .size(40.dp)
+            .background(bgColor, CircleShape)
+    ) {
+        Text(
+            text = label,
+            color = txtColor,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}

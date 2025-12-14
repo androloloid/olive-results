@@ -45,6 +45,7 @@ import com.androloloid.liveresult.data.Competition
 import com.androloloid.liveresult.data.Competitions
 import kotlinx.coroutines.delay
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.ui.res.stringResource
 
 //https://medium.com/@anu91ch/scan-qr-code-bar-code-android-kotlin-tutorial-using-ml-kit-f76b48e3289b
 
@@ -64,7 +65,7 @@ fun CompetitionScreen(navController: NavController, viewModel: CompetitionViewMo
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Search") },
+                placeholder = { Text(stringResource(R.string.search)) },
                 singleLine = true,
                 leadingIcon = {
                     Icon(
@@ -100,14 +101,14 @@ fun CompetitionScreen(navController: NavController, viewModel: CompetitionViewMo
 @Composable
 fun RefreshButton(onClick: () -> Unit, isLoading: Boolean, modifier: Modifier = Modifier) {
     IconButton(onClick = onClick, enabled = !isLoading, modifier = modifier) {
-        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+        Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.refresh))
     }
 }
 
 @Composable
 fun ScanButton(onClick: () -> Unit, isLoading: Boolean, modifier: Modifier = Modifier) {
     IconButton(onClick = onClick, enabled = !isLoading, modifier = modifier) {
-        Icon(painterResource(id = R.drawable.qr_code), contentDescription = "Scan QR Code")
+        //Icon(painterResource(id = R.drawable.qr_code), contentDescription = "Scan QR Code")
     }
 }
 
@@ -132,7 +133,8 @@ fun CompetitionList(
             contentAlignment = Alignment.Center
         ) {
             if (viewModel.isLoading) {
-                LoopingCircle2()
+                CircularProgressIndicator()
+                Text(stringResource(R.string.loading_competitions))
             } else {
                 RefreshButton(
                     onClick = { viewModel.loadCompetitions() },

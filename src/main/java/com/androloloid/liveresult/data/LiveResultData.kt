@@ -263,12 +263,12 @@ data class RunnerResult(
     }
 
     // time or status if status is not valid
-    fun getResult(language: String = "en"): String {
+    fun getResult(): String {
         try {
             if (status == 0L) {
                 return getTimeFromString(result)
             } else {
-                return RunnerResultStatus(status.toInt()).getStatusString(language)
+                return RunnerResultStatus(status.toInt()).getStatusString()
             }
         } catch (e: Exception) {
             return "---"
@@ -295,13 +295,17 @@ data class RunnerResult(
             return ""
         }
     }
-    fun getPlace(language: String = "en"): String {
+    fun getPlace(): String {
         if (status == 0L) {
             return place
         } else {
-            return RunnerResultStatus(status.toInt()).getStatusAbrev(language)
+            return RunnerResultStatus(status.toInt()).getStatusAbrev()
         }
     }
+    fun getStatus(): Int {
+        return status.toInt()
+    }
+
     fun getName(): String {
         // use upper case for first letter after space
         return name.replaceFirstChar({ if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() })
@@ -347,65 +351,30 @@ data class RunnerResult(
     class RunnerResultStatus(
         val status: Int
     ) {
-        fun getStatusString(language: String = "en"): String {
-            when (language) {
-                "fr" -> {
-                    when (status) {
-                        0 -> return "OK"
-                        1 -> return "Abs"
-                        2 -> return "Abd"
-                        3 -> return "PM"
-                        4 -> return "Disq."
-                        5 -> return "Temps Max"
-                        9 -> return "En course"
-                        10 -> return "En course"
-                        11 -> return "Abs"
-                        12 -> return "Abs"
-                        else -> return "???"
-                    }
-                }
-
-                else -> {
-                    when (status) {
-                        0 -> return "OK"
-                        1 -> return "DNS"
-                        2 -> return "DNF"
-                        3 -> return "MP"
-                        4 -> return "DSQ"
-                        5 -> return "OT"
-                        9 -> return "Not Started Yet"
-                        10 -> return "Not Started Yet"
-                        11 -> return "Walk Over"
-                        12 -> return "Moved up"
-                        else -> return "Unknown"
-                    }
-                }
+        fun getStatusString(): String {
+            when (status) {
+                0 -> return "OK"
+                1 -> return "DNS"
+                2 -> return "DNF"
+                3 -> return "MP"
+                4 -> return "DSQ"
+                5 -> return "OT"
+                9 -> return "Not Started Yet"
+                10 -> return "Not Started Yet"
+                11 -> return "Walk Over"
+                12 -> return "Moved up"
+                else -> return "Unknown"
             }
         }
-        fun getStatusAbrev(language: String = "en"): String {
-            when (language) {
-                "fr" -> {
-                    when (status) {
-                        0 -> return "OK"
-                        1 -> return "Abs"
-                        2 -> return "Abd"
-                        3 -> return "PM"
-                        4 -> return "Dsq"
-                        else -> return "--"
-                    }
-                }
-
-                else -> {
-                    when (status) {
-                        0 -> return "OK"
-                        1 -> return "DNS"
-                        2 -> return "DNF"
-                        3 -> return "MP"
-                        4 -> return "DSQ"
-                        5 -> return "OT"
-                        else -> return "--"
-                    }
-                }
+        fun getStatusAbrev(): String {
+            when (status) {
+                0 -> return "OK"
+                1 -> return "DNS"
+                2 -> return "DNF"
+                3 -> return "MP"
+                4 -> return "DSQ"
+                5 -> return "OT"
+                else -> return "--"
             }
         }
     }
