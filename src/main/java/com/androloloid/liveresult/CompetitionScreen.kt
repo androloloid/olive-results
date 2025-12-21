@@ -1,6 +1,7 @@
 package com.androloloid.liveresult
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -106,13 +107,6 @@ fun RefreshButton(onClick: () -> Unit, isLoading: Boolean, modifier: Modifier = 
 }
 
 @Composable
-fun ScanButton(onClick: () -> Unit, isLoading: Boolean, modifier: Modifier = Modifier) {
-    IconButton(onClick = onClick, enabled = !isLoading, modifier = modifier) {
-        //Icon(painterResource(id = R.drawable.qr_code), contentDescription = "Scan QR Code")
-    }
-}
-
-@Composable
 fun CompetitionList(
     competitions: Competitions,
     navController: NavController,
@@ -121,79 +115,91 @@ fun CompetitionList(
     modifier: Modifier = Modifier,
     listState: androidx.compose.foundation.lazy.LazyListState
 ) {
-    val filteredCompetitions = if (searchQuery.isEmpty()) {
-        competitions.competitions
-    } else {
-        competitions.competitions.filter { it.name.contains(searchQuery, ignoreCase = true) }
+    val filteredCompetitions = remember(competitions, searchQuery) {
+        if (searchQuery.isBlank()) {
+            competitions.competitions
+        } else {
+            competitions.competitions.filter {
+                it.name.contains(searchQuery, ignoreCase = true) ||
+                it.organizer.contains(searchQuery, ignoreCase = true) ||
+                it.id.toString().contains(searchQuery, ignoreCase = true)
+            }
+        }
     }
 
     if (filteredCompetitions.isEmpty()) {
-        Box(
-            modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            if (viewModel.isLoading) {
-                CircularProgressIndicator()
-                Text(stringResource(R.string.loading_competitions))
-            } else {
-                RefreshButton(
-                    onClick = { viewModel.loadCompetitions() },
-                    isLoading = viewModel.isLoading,
-                    modifier = Modifier
-                )
-            }
-        }
+        CompetitionListEmptyState(viewModel, modifier)
     } else {
-
-        // move to the selected competition
-        val firstMatchIndex = if (viewModel.selectedCompetition != null) {
-            filteredCompetitions.indexOfFirst { it == viewModel.selectedCompetition }
-        } else {
-            -1
-        }
-
-        LaunchedEffect(firstMatchIndex) {
-            if (firstMatchIndex != -1) {
-                listState.animateScrollToItem(firstMatchIndex)
-            }
-        }
-
-        // create the list of competitions to displqy
-        LazyColumn(modifier = modifier, state = listState) {
-            itemsIndexed(filteredCompetitions) { index, competition ->
-                val isMatch = searchQuery.isNotEmpty() &&
-                        (competition.name.contains(searchQuery, ignoreCase = true)
-                        || competition.organizer.contains(searchQuery, ignoreCase = true)
-                        || competition.id.toString().contains(searchQuery, ignoreCase = true))
-
-                CompetitionItem(
-                    competition = competition,
-                    navController = navController,
-                    viewModel = viewModel,
-                    isMatch = isMatch
-                )
-            }
-        }
+        CompetitionListContent(
+            filteredCompetitions = filteredCompetitions,
+            navController = navController,
+            viewModel = viewModel,
+            searchQuery = searchQuery,
+            modifier = modifier,
+            listState = listState
+        )
     }
 }
+
 @Composable
-fun LoopingCircle2() {
-    // display a picture of animated gif drawable/runner.gif
-    var currentProgress by remember { mutableStateOf(0f) }
-    // create a circular progress indicator looping indefinitly
-    LaunchedEffect(Unit) {
-        while (true) {
-            currentProgress = (currentProgress + 0.05f) % 1f
-            delay(100)
+private fun CompetitionListEmptyState(viewModel: CompetitionViewModel, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        if (viewModel.isLoading) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(stringResource(R.string.loading_competitions))
+            }
+        } else {
+            RefreshButton(
+                onClick = { viewModel.loadCompetitions() },
+                isLoading = viewModel.isLoading
+            )
         }
     }
-    CircularProgressIndicator(
-        progress = { currentProgress },
-        modifier = Modifier
-            .width(128.dp)
-            .padding(vertical = 6.dp)
-    )
 }
+
+@Composable
+private fun CompetitionListContent(
+    filteredCompetitions: List<Competition>,
+    navController: NavController,
+    viewModel: CompetitionViewModel,
+    searchQuery: String,
+    modifier: Modifier = Modifier,
+    listState: androidx.compose.foundation.lazy.LazyListState
+) {
+    // Scroll to the selected competition
+    val selectedCompetitionIndex = remember(filteredCompetitions, viewModel.selectedCompetition) {
+        viewModel.selectedCompetition?.let { selected ->
+            filteredCompetitions.indexOfFirst { it.id == selected.id }
+        } ?: -1
+    }
+
+    LaunchedEffect(selectedCompetitionIndex) {
+        if (selectedCompetitionIndex != -1) {
+            listState.animateScrollToItem(selectedCompetitionIndex)
+        }
+    }
+
+    LazyColumn(modifier = modifier, state = listState) {
+        itemsIndexed(filteredCompetitions) { _, competition ->
+            val isMatch = searchQuery.isNotEmpty()
+            CompetitionItem(
+                competition = competition,
+                navController = navController,
+                viewModel = viewModel,
+                isMatch = isMatch
+            )
+        }
+    }
+}
+
 
 @Composable
 fun CompetitionItem(
