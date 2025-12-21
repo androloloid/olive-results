@@ -214,9 +214,9 @@ fun CompetitionItem(
         colors = CardDefaults.cardColors(
             containerColor = when {
                 competition == viewModel.selectedCompetition -> MaterialTheme.colorScheme.primary
-                isMatch -> MaterialTheme.colorScheme.surfaceContainerHighest
-                competition.isToday() -> MaterialTheme.colorScheme.surfaceContainerHighest
-                else -> MaterialTheme.colorScheme.surfaceContainer
+                isMatch -> MaterialTheme.colorScheme.surfaceContainerLowest
+                competition.isToday() -> MaterialTheme.colorScheme.surfaceContainerLowest
+                else -> MaterialTheme.colorScheme.surfaceContainerLow
             }
         )
     ) {

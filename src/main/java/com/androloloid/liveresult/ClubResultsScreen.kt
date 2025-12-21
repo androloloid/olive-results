@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,6 +20,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -28,6 +30,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MenuAnchorType.Companion.PrimaryNotEditable
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -42,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -80,33 +84,54 @@ fun ClubResultsScreen(navController: NavController, viewModel: CompetitionViewMo
             }
 
             if (competition != null) {
-                OutlinedTextField(
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !viewModel.isLoadingClubs,
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = { Text(stringResource(id = R.string.search_club)) },
-                    label = { Text(stringResource(id = R.string.search)) },
-                    singleLine = true,
-                    leadingIcon = {
-                        Icon(
-                            Icons.Filled.Search,
-                            contentDescription = "Club Search",
-                            modifier = Modifier.clickable {  keyboardController?.hide() }
-                        )
-                    },
-                    trailingIcon = {
-                        Icon(
-                            Icons.Filled.Clear,
-                            contentDescription = "Clear",
-                            modifier = Modifier.clickable { searchQuery = TextFieldValue(""); keyboardController?.hide()}
-                        )
-                    },
-                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
-                    keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() })
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()) {
+                    OutlinedTextField(
+                        modifier = Modifier.weight(1f),
+                        enabled = !viewModel.isLoadingClubs,
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        placeholder = { Text(stringResource(id = R.string.search_club)) },
+                        label = { Text(stringResource(id = R.string.search)) },
+                        singleLine = true,
+                        leadingIcon = {
+                            Icon(
+                                Icons.Filled.Search,
+                                contentDescription = "Club Search",
+                                modifier = Modifier.clickable { keyboardController?.hide() }
+                            )
+                        },
+                        trailingIcon = {
+                            Icon(
+                                Icons.Filled.Clear,
+                                contentDescription = "Clear",
+                                modifier = Modifier.clickable {
+                                    searchQuery = TextFieldValue(""); keyboardController?.hide()
+                                }
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() })
+                    )
+                    if (viewModel.selectedCompetition?.isToday() == true) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        IconButton(
+                            onClick = {
+                                viewModel.periodicClubResultRefreshTask()
+                            },
+                            modifier = Modifier.align(Alignment.CenterVertically),
+                            colors = androidx.compose.material3.IconButtonDefaults.iconButtonColors(
+                                containerColor = androidx.compose.material3.MaterialTheme.colorScheme.secondaryContainer)
+                        ) {
+                            Icon(Icons.Default.Refresh,
+                                contentDescription = "Refresh",
+                                modifier = Modifier.fillMaxHeight())
+                        }
+                    }
+                }
 
-                RefreshProgressBar(viewModel, key = viewModel.selectedClubs, modifier = Modifier) { viewModel.periodicClubResultRefreshTask() }
+                //RefreshProgressBar(viewModel, key = viewModel.selectedClubs, modifier = Modifier) { viewModel.periodicClubResultRefreshTask() }
 
                 if (!viewModel.isLoadingClubs && viewModel.selectedClubsResults.isNotEmpty()) {
                     println("### results changed selectedClubsResults.size=${viewModel.selectedClubsResults.size}")

@@ -66,7 +66,7 @@ fun LiveResultsScreen(navController: NavController, viewModel: CompetitionViewMo
                     onExpandedChange = {
                         expanded = !expanded
                     },
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = 8.dp),
                 ) {
                     TextField(
                         readOnly = true,
@@ -84,6 +84,7 @@ fun LiveResultsScreen(navController: NavController, viewModel: CompetitionViewMo
                         modifier = Modifier
                             .fillMaxWidth()
                             .menuAnchor(PrimaryNotEditable)
+                        // set the focus on the textField
                     )
                     ExposedDropdownMenu(
                         expanded = expanded,
@@ -104,7 +105,13 @@ fun LiveResultsScreen(navController: NavController, viewModel: CompetitionViewMo
                     }
                 }
 
-                RefreshProgressBar(viewModel, key = viewModel.selectedClass, modifier = Modifier) { viewModel.periodicClassResultRefreshTask() }
+                if (viewModel.classResults?.needRefresh() == true) {
+                    RefreshProgressBar(
+                        viewModel,
+                        key = viewModel.selectedClass,
+                        modifier = Modifier
+                    ) { viewModel.periodicClassResultRefreshTask() }
+                }
 
                 if (searching) {
                     val focusRequester = remember { FocusRequester() }

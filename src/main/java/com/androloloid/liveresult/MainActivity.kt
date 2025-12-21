@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            LiveResultTheme(dynamicColor = true) {
+            LiveResultTheme(dynamicColor = false /*use app colors*/) {
                 MainScreen()
             }
         }

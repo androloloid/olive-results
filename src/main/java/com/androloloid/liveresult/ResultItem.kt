@@ -60,13 +60,17 @@ fun getStatusStringResource(status: Int): String {
 @Composable
 fun ResultItem(viewModel: CompetitionViewModel, result: RunnerResult, classResults: ClassResults?, modifier: Modifier) {
     var expandedRow by remember { mutableStateOf(false) }
+    var containerBgColor = MaterialTheme.colorScheme.surfaceContainerLow
+    if (result.getRanking() <= 3) {
+        containerBgColor = MaterialTheme.colorScheme.surfaceContainerLowest
+    }
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         onClick = { expandedRow = !expandedRow },
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
+            containerColor = containerBgColor
         )
     ) {
         Row(
@@ -76,7 +80,7 @@ fun ResultItem(viewModel: CompetitionViewModel, result: RunnerResult, classResul
         ) {
             Column(modifier = Modifier.fillMaxHeight()) {
                 Spacer(modifier = Modifier.weight(1f))
-                CircleChar( result.getPlace(), result.getStatus())
+                CircleChar( result.getRankingStr(), result.getStatus())
                 Spacer(modifier = Modifier.weight(1f))
             }
             Spacer(modifier = Modifier.width(5.dp))
@@ -97,7 +101,7 @@ fun ResultItem(viewModel: CompetitionViewModel, result: RunnerResult, classResul
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(10.dp))
                     }
                     Text(
                         text = result.clubName,

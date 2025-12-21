@@ -22,10 +22,12 @@ private val DarkColorScheme = darkColorScheme(
 private val LightColorScheme = lightColorScheme(
     primary = OrienteeringPrimary,
     secondary = OrienteeringSecondary,
+    tertiary = OrienteeringTertiary,
     surfaceContainer = OrienteeringSurfaceContainer,
     surfaceContainerHighest = OrienteeringSurfaceContainerHighest,
-    tertiary = OrienteeringTertiary,
-    primaryContainer = OrienteeringPrimaryContainer,
+    surfaceContainerLow = OrienteeringSurfaceContainerLow,
+    surfaceContainerLowest = OrienteeringSurfaceContainerLowest,
+    primaryContainer = OrienteeringPrimary, //OrienteeringPrimaryContainer,
     secondaryContainer = OrienteeringSecondaryContainer,
 )
 

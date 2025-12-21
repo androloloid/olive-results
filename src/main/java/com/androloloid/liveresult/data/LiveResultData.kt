@@ -1,16 +1,7 @@
 package com.androloloid.liveresult.data
 
 import android.annotation.SuppressLint
-import androidx.compose.ui.text.capitalize
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.nullable
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import java.time.LocalDate
 import java.util.Locale
 
@@ -209,6 +200,16 @@ data class ClassResults(
     val splitcontrols: List<SplitControl>,
     val results: List<RunnerResult>,
     val hash: String)
+{
+    fun needRefresh() : Boolean {
+        for (r in results) {
+            if (r.isRunning()) {
+                return true
+            }
+        }
+        return false
+    }
+}
 
 @SuppressLint("UnsafeOptInUsageError")
 @Serializable
@@ -217,6 +218,16 @@ data class ClubResults(
     val clubName: String,
     val results: List<RunnerResult>,
     val hash: String)
+{
+    fun needRefresh() : Boolean {
+        for (r in results) {
+            if (r.isRunning()) {
+                return true
+            }
+        }
+        return false
+    }
+}
 @SuppressLint("UnsafeOptInUsageError")
 @Serializable
 data class SplitControl(
@@ -295,7 +306,7 @@ data class RunnerResult(
             return ""
         }
     }
-    fun getPlace(): String {
+    fun getRankingStr(): String {
         if (status == 0L) {
             return place
         } else {
@@ -325,6 +336,10 @@ data class RunnerResult(
             }
         }
     }
+    fun isRunning(): Boolean {
+        return /*status == 1L ||*/ status == 9L || status == 10L
+    }
+
     fun getStatus(): Int {
         return status.toInt()
     }
