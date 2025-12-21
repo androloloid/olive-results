@@ -4,16 +4,16 @@
     <string name="clear1">Clear</string>
     <string name="events">Events</string>
     <string name="class_results">Class Results</string>
-    <string name="club_results">Club Results</string>
+    <string name="club_results">Team Results</string>
 
     <string name="no_results">No results to display</string>
     <string name="no_competition_selected">No event selected</string>
 
     <!-- club -->
-    <string name="search_club">Search Club</string>
-    <string name="enter_club">Enter a club name to see results</string>
+    <string name="search_club">Search Team</string>
+    <string name="enter_club">Enter a team name to see results</string>
     <string name="clubs_loaded">clubs found</string>
-    <string name="loading_clubs">Loading clubs...</string>
+    <string name="loading_clubs">Loading teams...</string>
     <string name="loading_results">Loading results...</string>
     <!-- competition -->
     <string name="loading_competitions">Loading events...</string>

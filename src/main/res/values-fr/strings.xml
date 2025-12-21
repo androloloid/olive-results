@@ -4,7 +4,7 @@
     <string name="clear1">Effacer</string>
     <string name="events">Compétitions</string>
     <string name="class_results">Circuits</string>
-    <string name="club_results">Club/Equipes</string>
+    <string name="club_results">Equipes</string>
 
     <string name="no_results">Aucun résultat</string>
     <string name="no_competition_selected">Sélectionnez une compétition</string>
@@ -12,8 +12,8 @@
     <!-- club -->
     <string name="search_club">Rechercher un club</string>
     <string name="enter_club">Entrer un nom de club</string>
-    <string name="clubs_loaded">clubs trouvés</string>
-    <string name="loading_clubs">Chargement des clubs...</string>
+    <string name="clubs_loaded">équipes trouvés</string>
+    <string name="loading_clubs">Chargement des équipes...</string>
     <string name="loading_results">Chargement des résultats...</string>
     <!-- competition -->
     <string name="loading_competitions">Chargement des compétitions...</string>

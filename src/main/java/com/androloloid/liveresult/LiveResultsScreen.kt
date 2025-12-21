@@ -49,7 +49,10 @@ fun LiveResultsScreen(navController: NavController, viewModel: CompetitionViewMo
     var expanded by remember { mutableStateOf(false) }
     var searching by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
-    val results = viewModel.classResults?.results?.filter { it.getName().contains(searchQuery, ignoreCase = true) || it.clubName.contains(searchQuery, ignoreCase = true) }
+    val results = viewModel.classResults?.results
+        ?.filter { it.getName().contains(searchQuery, ignoreCase = true)
+                || it.clubName.contains(searchQuery, ignoreCase = true) }
+        ?.sortedBy { it.getRanking() }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -72,7 +75,6 @@ fun LiveResultsScreen(navController: NavController, viewModel: CompetitionViewMo
                         label = {
                             Text(
                                 competition.name,
-                                //style = MaterialTheme.typography.headlineSmall
                             )
                         },
                         trailingIcon = {

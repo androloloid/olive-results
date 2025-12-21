@@ -302,6 +302,29 @@ data class RunnerResult(
             return RunnerResultStatus(status.toInt()).getStatusAbrev()
         }
     }
+    fun getRanking(): Int {
+        if (status == 0L) {
+            try {
+                return place.toInt()
+            } catch(e: Exception) {
+                return 10000
+            }
+        } else {
+            // finisher first
+            if (status == 5L) { // Out of Time
+                return 10001
+            } else if (status == 3L) { // Missing punch
+                return 10002
+            } else if (status == 2L) { // Did Not Finish
+                return 10003
+            } else if (status == 4L) { // Disqualified
+                return 10004
+            } else {
+                // not started later
+                return 10010 + status.toInt()
+            }
+        }
+    }
     fun getStatus(): Int {
         return status.toInt()
     }

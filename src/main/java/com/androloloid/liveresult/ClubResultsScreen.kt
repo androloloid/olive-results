@@ -1,5 +1,6 @@
 package com.androloloid.liveresult
 
+import android.graphics.drawable.Icon
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,7 +57,7 @@ import kotlinx.coroutines.delay
 fun ClubResultsScreen(navController: NavController, viewModel: CompetitionViewModel) {
     val competition = viewModel.selectedCompetition
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
-    var lastTextToSearch by remember { mutableStateOf("") }
+    var sortMode by remember { mutableStateOf("abc") }
     val keyboardController = LocalSoftwareKeyboardController.current
 
     // observer viewModel for changes in selectedCompetition
@@ -109,8 +110,20 @@ fun ClubResultsScreen(navController: NavController, viewModel: CompetitionViewMo
 
                 if (!viewModel.isLoadingClubs && viewModel.selectedClubsResults.isNotEmpty()) {
                     println("### results changed selectedClubsResults.size=${viewModel.selectedClubsResults.size}")
-                    LazyColumn(modifier = Modifier.fillMaxSize().weight(1f)) {
-                        items(viewModel.selectedClubsResults) { result ->
+                    LazyColumn(modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f)) {
+                        var sortedResults = viewModel.selectedClubsResults
+                        when (sortMode ) {
+                            "abc" ->
+                                sortedResults =viewModel.selectedClubsResults.sortedBy{it.getName()}
+                            "123" ->
+                                sortedResults =viewModel.selectedClubsResults.sortedBy {it.getRanking()}
+                            else ->
+                                sortedResults =viewModel.selectedClubsResults.sortedBy {it.clubName}
+                        }
+
+                        items(sortedResults) { result ->
                             ResultItem(
                                 viewModel = viewModel,
                                 result = result,
@@ -125,7 +138,9 @@ fun ClubResultsScreen(navController: NavController, viewModel: CompetitionViewMo
                     }
                 } else {
                     Box(
-                        modifier = Modifier.fillMaxSize().weight(1f),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f),
                         contentAlignment = Alignment.Center
                     ) {
                         if (viewModel.isLoadingClubs || viewModel.isLoadingClubsResults) {
@@ -138,12 +153,44 @@ fun ClubResultsScreen(navController: NavController, viewModel: CompetitionViewMo
                     }
                 }
             } else {
-                Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f), contentAlignment = Alignment.Center) {
                     Text(stringResource(R.string.no_competition_selected))
                 }
             }
         }
+        // sort button
+        if (!viewModel.isLoadingClubs && !viewModel.isLoadingClubsResults && viewModel.selectedClubsResults.isNotEmpty()) {
+            FloatingActionButton(
+                onClick = {
+                    when (sortMode) {
+                        "abc" -> sortMode = "123"
+                        "123" -> sortMode = "Team"
+                        else -> sortMode = "abc"
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+            ) {
+                /*
+                when (sortMode) {
+                    "abc" -> Text("abc")
+                    "123" -> Text("123")
+                    else -> Text("Team")
+                }
+                */
+                // use the icon R.drawable.sort_alpha
+                when(sortMode) {
+                    "abc" -> Icon(androidx.compose.ui.res.painterResource(R.drawable.sort_alpha), contentDescription = "Sort")
+                    "123" -> Icon(androidx.compose.ui.res.painterResource(R.drawable.sort_numeric), contentDescription = "Sort")
+                    else -> Icon(androidx.compose.ui.res.painterResource(R.drawable.sort_team), contentDescription = "Sort")
+                }
+            }
+        }
     }
+
     // overlay a circleloop2 in the middle of the screen when loadingCLubResuts is true
     if (viewModel.isLoadingClubsResults) {
         Box(
@@ -180,6 +227,5 @@ fun ClubResultsScreen(navController: NavController, viewModel: CompetitionViewMo
             }
         }
     }
-
 
 }
