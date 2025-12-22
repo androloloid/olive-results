@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">LiveResult</string>
     <string name="search">Search</string>
+    <string name="start">Start</string>
     <string name="clear1">Clear</string>
     <string name="events">Events</string>
     <string name="class_results">Class Results</string>
@@ -10,7 +11,8 @@
     <string name="no_competition_selected">No event selected</string>
 
     <!-- club -->
-    <string name="search_club">Search Team</string>
+    <string name="search_club">Search team</string>
+    <string name="select_club">"Select a team"</string>
     <string name="enter_club">Enter a team name to see results</string>
     <string name="clubs_loaded">clubs found</string>
     <string name="loading_clubs">Loading teams...</string>

@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,15 +21,20 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -62,23 +68,50 @@ fun ClubResultsScreen(navController: NavController, viewModel: CompetitionViewMo
 
     Scaffold(
         floatingActionButton = {
-            if (viewModel.shouldShowClubSortButton()) {
-                SortButton(sortMode) { newSortMode -> sortMode = newSortMode }
+            if (shouldShowClubSortButton(viewModel)) {
+                SortButton(sortMode, onSortModeChange = { sortMode = it })
             }
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding).padding(16.dp)) {
-            SearchBar(
-                searchQuery = searchQuery,
-                onSearchQueryChange = { searchQuery = it },
-                viewModel = viewModel
-            )
-            Spacer(Modifier.height(16.dp))
-            MainContent(viewModel, sortMode)
+            ClubResultsContent(viewModel, searchQuery, sortMode, onSearchQueryChange = { searchQuery = it })
         }
     }
 
     LoadingOverlay(viewModel)
+}
+
+@Composable
+private fun ClubResultsContent(
+    viewModel: CompetitionViewModel,
+    searchQuery: TextFieldValue,
+    sortMode : String,
+    onSearchQueryChange : (TextFieldValue) -> Unit
+)
+{
+    val displayClubSearch = remember(viewModel.isLoadingClubs) {
+        if (viewModel.isLoadingClubs == false) {
+            doDisplayClubSearch(viewModel)
+        } else {
+            false
+        }
+    }
+
+    if (viewModel.clubs.isNotEmpty()) {
+        if (displayClubSearch) { // too many clubs to display all, just use a search bar
+            SearchBar(
+                searchQuery = searchQuery,
+                onSearchQueryChange = { onSearchQueryChange(it) },
+                viewModel = viewModel
+            )
+        } else {
+            ClubSelectorDropdown(viewModel)
+        }
+
+
+        Spacer(Modifier.height(16.dp))
+    }
+    MainContent(viewModel, sortMode)
 }
 
 @Composable
@@ -102,7 +135,8 @@ private fun MainContent(viewModel: CompetitionViewModel, sortMode: String) {
             EmptyState(stringResource(R.string.no_results))
         }
         viewModel.selectedClubs.isEmpty() && !viewModel.isLoadingClubs -> {
-            EmptyState(stringResource(R.string.enter_club) + "${viewModel.clubs.size} " + stringResource(R.string.clubs_loaded))
+            EmptyState(stringResource(R.string.enter_club) + "\n"
+                    + "${viewModel.clubs.size} " + stringResource(R.string.clubs_loaded))
         }
     }
 }
@@ -131,6 +165,47 @@ private fun LoadingOverlay(viewModel: CompetitionViewModel) {
                         Text(stringResource(R.string.loading_results))
                     }
                 }
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ClubSelectorDropdown(viewModel: CompetitionViewModel) {
+    var expanded by remember { mutableStateOf(false) }
+    val competition = viewModel.selectedCompetition ?: return
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = Modifier.padding(top = 8.dp),
+    ) {
+        TextField(
+            readOnly = true,
+            value = viewModel.selectedClub1 ?: stringResource(R.string.select_club),
+            onValueChange = {},
+            label = { Text(competition.name) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            colors = ExposedDropdownMenuDefaults.textFieldColors(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable)
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            viewModel.clubs.forEach { clubName ->
+                DropdownMenuItem(
+                    text = { Text(clubName) },
+                    onClick = {
+                        viewModel.selectClubs(clubName)
+                        expanded = false
+                    }
+                )
             }
         }
     }
@@ -178,17 +253,6 @@ private fun SearchBar(
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() })
         )
-        if (viewModel.selectedCompetition?.isToday() == true) {
-            Spacer(modifier = Modifier.width(4.dp))
-            IconButton(
-                onClick = { viewModel.periodicClubResultRefreshTask() },
-                colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
-            ) {
-                Icon(Icons.Default.Refresh, contentDescription = "Refresh")
-            }
-        }
     }
 }
 
@@ -201,6 +265,12 @@ private fun ClubResultsList(viewModel: CompetitionViewModel, sortMode: String) {
             else -> viewModel.selectedClubsResults.sortedBy { it.clubName }
         }
     }
+
+    RefreshProgressBar(
+        viewModel,
+        key = viewModel.selectedClubs,
+        modifier = Modifier
+    ) { viewModel.periodicClubResultRefreshTask() }
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(sortedResults) { result ->
@@ -247,6 +317,25 @@ private fun EmptyState(message: String) {
     }
 }
 
-private fun CompetitionViewModel.shouldShowClubSortButton(): Boolean {
-    return !isLoadingClubs && !isLoadingClubsResults && selectedClubsResults.isNotEmpty()
+private fun shouldShowClubSortButton(viewModel: CompetitionViewModel): Boolean {
+    return !viewModel.isLoadingClubs && !viewModel.isLoadingClubsResults && viewModel.selectedClubsResults.isNotEmpty()
+}
+
+private fun doDisplayClubSearch(viewModel: CompetitionViewModel): Boolean {
+    return hasSimilarNames(viewModel.clubs)
+}
+
+// return true if only the last character of the names in the list is different
+private fun hasSimilarNames(names : List<String>) : Boolean {
+    if (names.size < 10) return false
+    for (i in 0 until names.size - 1) {
+        for (j in i + 1 until names.size) {
+            if (names[i].length > 1 && names[j].length > 1) {
+                if (names[i].dropLast(1) == names[j].dropLast(1)) {
+                    return true
+                }
+            }
+        }
+    }
+    return false
 }

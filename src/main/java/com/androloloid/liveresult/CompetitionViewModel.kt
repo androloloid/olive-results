@@ -52,6 +52,8 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
 
     var selectedClubs by mutableStateOf<MutableList<String>>(mutableListOf())
         private set
+    var selectedClub1 by mutableStateOf<String?>(null)
+        private set
     var selectedClubsResults by mutableStateOf<List<RunnerResult>>(emptyList())
         private set
     var clubs by mutableStateOf<MutableList<String>>(mutableListOf())
@@ -125,6 +127,7 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
                 }
                 // sort club name alphabetically
                 clubs.sort()
+                println("clubs loaded: ${clubs.size}")
                 isLoadingClubs = false
             }
         }
@@ -180,11 +183,9 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
     private var activeClubFilter = ""
     private var clubResultThread: Job? = null
     fun selectClubs(filter: String) {
-        println("selectClubs filter=$filter")
         newClubFilter = filter
         // start thread calling clubResultThreadProcedure if not already running
         if (clubResultThread?.isActive != true) {
-            println("selectClubs starting thread")
             clubResultThread = viewModelScope.launch {
                 clubResultThreadProcedure()
             }
@@ -195,7 +196,6 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
         while (true) {
             val textToSearch = newClubFilter
             if (activeClubFilter != textToSearch && !isLoadingClubsResults) {
-                println("clubResultThreadProcedure textToSearch=$textToSearch")
                 activeClubFilter = textToSearch
                 selectClubsAndLoad(activeClubFilter)
             }
@@ -204,23 +204,26 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     private fun selectClubsAndLoad(filter: String) {
-        println("selectClubs filter=$filter")
         if (filter.isNotEmpty()) {
             selectedClubs.clear()
+            selectedClub1=null
             for (clubName in clubs) {
                 if (clubName.contains(filter, ignoreCase = true)) {
                     selectedClubs.add(clubName)
                 }
             }
+            if (selectedClubs.isNotEmpty()) {
+                selectedClub1 = selectedClubs[0]
+            }
             loadClubResults()
         } else {
             selectedClubs.clear()
+            selectedClub1=null
             selectedClubsResults = emptyList()
         }
     }
 
     private fun loadClubResults() {
-        println("++++ loadClubResults")
         if (selectedClubs.isEmpty()) {
             return
         }

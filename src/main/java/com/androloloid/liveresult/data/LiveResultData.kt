@@ -235,6 +235,7 @@ data class SplitControl(
     val name: String)
 
 class Split(val code: String,
+            val timeInt: Int,
             val time: String,
             val status: Int,
             val place: String,
@@ -287,11 +288,7 @@ data class RunnerResult(
     }
 
     fun getStartTime(): String {
-        val hours = start / 3600
-        val minutes = (start % 3600) / 60
-        val seconds = start % 60
-
-        return String.format("%02d:%02d:%02d", hours, minutes, seconds)
+        return getTimeFromString(start.toString())
     }
 
     // diff with first runner
@@ -350,6 +347,7 @@ data class RunnerResult(
     }
 
     fun hasSplits() : Boolean { return splits != null && splits.isNotEmpty() }
+    fun getNumSplits() : Int { return splits?.size ?: 0 }
 
     fun getSplits(splitcontrols: List<SplitControl>?) : List<Split> {
         var splitList = mutableListOf<Split>()
@@ -363,13 +361,21 @@ data class RunnerResult(
                 val splitPlace = splits.get(code+"_place")?.invoke()
                 val splitTimePlus = splits.get(code+"_timeplus")?.invoke()
                 if (splitResult != null && splitStatus != null && splitPlace != null && splitTimePlus != null) {
-                    splitList.add(Split(ctrl.name,
-                        getTimeFromString(splitResult.toString()),
-                        splitStatus,
-                        splitPlace.toString(),
-                        getTimeFromString(splitTimePlus.toString())))
+                    for (i in 1..15) {
+                        splitList.add(
+                            Split(
+                                ctrl.name,
+                                splitResult?:0,
+                                getTimeFromString(splitResult.toString()),
+                                splitStatus,
+                                splitPlace.toString(),
+                                getTimeFromString(splitTimePlus.toString())
+                            )
+                        )
+                    }
                 }
             }
+            splitList.sortBy { it.timeInt }
         }
         return splitList
     }

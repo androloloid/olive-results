@@ -1,5 +1,6 @@
 package com.androloloid.liveresult
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,8 +24,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,6 +63,17 @@ fun getStatusStringResource(status: Int): String {
 
 @Composable
 fun ResultItem(viewModel: CompetitionViewModel, result: RunnerResult, classResults: ClassResults?, modifier: Modifier) {
+    if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
+        println("ResultItem Vertical")
+        ResultItemV(viewModel, result, classResults, modifier)
+    } else {
+        println("ResultItem Horizontal")
+        ResultItemH(viewModel, result, classResults, modifier)
+    }
+}
+
+    @Composable
+fun ResultItemV(viewModel: CompetitionViewModel, result: RunnerResult, classResults: ClassResults?, modifier: Modifier) {
     var expandedRow by remember { mutableStateOf(false) }
     var containerBgColor = MaterialTheme.colorScheme.surfaceContainerLow
     if (result.getRanking() <= 3) {
@@ -75,7 +90,7 @@ fun ResultItem(viewModel: CompetitionViewModel, result: RunnerResult, classResul
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(8.dp, 4.dp)
                 .fillMaxWidth()
         ) {
             Column(modifier = Modifier.fillMaxHeight()) {
@@ -111,33 +126,51 @@ fun ResultItem(viewModel: CompetitionViewModel, result: RunnerResult, classResul
                 }
             }
             Spacer(modifier = Modifier.width(5.dp))
-            // compute the column width so the text "22:22:22" using the default font with bold style can fit the column
-            Column(modifier = Modifier) {
-                Row(modifier = Modifier) {
-                    var label = result.getResult()
-                    if (result.getStatus() != 0) {
-                        label = ""
-                    }
+            if (result.getStatus() != 0 || result.isRunning()) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 5.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                )
+                {
                     Text(
-                        label,
+                        text = stringResource(id = R.string.start),
                         fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodySmall,
                         softWrap = false
                     )
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(modifier = Modifier) {
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = result.getTimePlus(),
+                        text = result.getStartTime(),
                         style = MaterialTheme.typography.bodySmall,
                         softWrap = false
                     )
                 }
+            } else if (result.getStatus() == 0) {
+                Column(modifier = Modifier) {
+                    Row(modifier = Modifier) {
+                        Text(
+                            result.getResult(),
+                            fontWeight = FontWeight.Bold,
+                            softWrap = false
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(modifier = Modifier) {
+                        Text(
+                            text = result.getTimePlus(),
+                            style = MaterialTheme.typography.bodySmall,
+                            softWrap = false
+                        )
+                    }
+                }
+            } else {
+                // MP / disqualified / ...
             }
         }
         if (expandedRow && result.hasSplits()) {
             Row(
                 modifier = Modifier
-                    .padding(start = 16.dp, end = 16.dp, bottom=16.dp, top = 0.dp  )
+                    .padding(start = 8.dp, end = 4.dp, bottom=8.dp, top = 0.dp  )
                     .fillMaxWidth()
             ) {
                 for(split in result.getSplits(classResults?.splitcontrols)) {
@@ -164,6 +197,141 @@ fun ResultItem(viewModel: CompetitionViewModel, result: RunnerResult, classResul
                     }
                 }
                 Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+
+@Composable
+fun ResultItemH(viewModel: CompetitionViewModel, result: RunnerResult, classResults: ClassResults?, modifier: Modifier) {
+    var containerBgColor = MaterialTheme.colorScheme.surfaceContainerLow
+    if (result.getRanking() <= 3) {
+        containerBgColor = MaterialTheme.colorScheme.surfaceContainerLowest
+    }
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = containerBgColor
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(8.dp, 4.dp)
+                .fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.fillMaxHeight()) {
+                Spacer(modifier = Modifier.weight(1f))
+                CircleChar(result.getRankingStr(), result.getStatus())
+                Spacer(modifier = Modifier.weight(1f))
+            }
+            Spacer(modifier = Modifier.width(5.dp))
+            // compute the size that a text  with 10 characters would take
+            val textMeasurer = rememberTextMeasurer()
+            val colNameWidth = textMeasurer.measure("_________").size.width
+            // TODO: pass it as a parameter and use class controls count
+            val modifierColName = if(result.getNumSplits() > 5) modifier.width(colNameWidth.dp) else modifier.weight(2f).fillMaxWidth()
+            Column(modifier = modifierColName) {
+                Row(modifier = Modifier) {
+                    val name = toLowerCamelCase(result.getName())
+                    Text(
+                        text = name,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(modifier = Modifier) {
+                    if (classResults == null) {
+                        Text(
+                            text = viewModel.runnersClass[result.getName()] ?: "",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                    }
+                    Text(
+                        text = result.clubName,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(5.dp))
+            if (result.getStatus() != 0 || result.isRunning()) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 5.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                )
+                {
+                    Text(
+                        text = stringResource(id = R.string.start),
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodySmall,
+                        softWrap = false
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = result.getStartTime(),
+                        style = MaterialTheme.typography.bodySmall,
+                        softWrap = false
+                    )
+                }
+            } else if (result.getStatus() == 0) {
+                Column(modifier = Modifier) {
+                    Row(modifier = Modifier) {
+                        Text(
+                            result.getResult(),
+                            fontWeight = FontWeight.Bold,
+                            softWrap = false
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(modifier = Modifier) {
+                        Text(
+                            text = result.getTimePlus(),
+                            style = MaterialTheme.typography.bodySmall,
+                            softWrap = false
+                        )
+                    }
+                }
+            } else {
+                // MP / disqualified / ...
+            }
+            if (result.hasSplits()) {
+                Spacer(modifier = Modifier.width(15.dp))
+                for (split in result.getSplits(classResults?.splitcontrols)) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 5.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    )
+                    {
+                        Text(
+                            text = split.code,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.bodySmall,
+                            softWrap = false
+                        )
+                        Text(
+                            text = if (split.status == 0) {
+                                split.time + "(" + split.place + ")"
+                            } else {
+                                split.time
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            softWrap = false
+                        )
+                        Text(
+                            text = "+" + split.timeplus,
+                            style = MaterialTheme.typography.bodySmall,
+                            softWrap = false
+                        )
+                    }
+                }
             }
         }
     }

@@ -59,7 +59,7 @@ fun CompetitionScreen(navController: NavController, viewModel: CompetitionViewMo
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(8.dp, 8.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
@@ -226,7 +226,7 @@ fun CompetitionItem(
             }
         )
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(modifier = Modifier.padding(8.dp)) {
             Text(
                 text = competition.name,
                 fontWeight = FontWeight.Bold

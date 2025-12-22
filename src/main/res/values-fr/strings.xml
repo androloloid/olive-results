@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">LiveResult</string>
     <string name="search">Rechercher</string>
+    <string name="start">Départ</string>
     <string name="clear1">Effacer</string>
     <string name="events">Compétitions</string>
     <string name="class_results">Circuits</string>
@@ -10,8 +11,9 @@
     <string name="no_competition_selected">Sélectionnez une compétition</string>
 
     <!-- club -->
-    <string name="search_club">Rechercher un club</string>
-    <string name="enter_club">Entrer un nom de club</string>
+    <string name="search_club">Rechercher une équipe</string>
+    <string name="select_club">Sélectionner une équipe</string>
+    <string name="enter_club">Entrer un nom d\'équipe</string>
     <string name="clubs_loaded">équipes trouvés</string>
     <string name="loading_clubs">Chargement des équipes...</string>
     <string name="loading_results">Chargement des résultats...</string>
