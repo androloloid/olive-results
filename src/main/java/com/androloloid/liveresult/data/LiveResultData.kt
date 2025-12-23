@@ -350,6 +350,7 @@ data class RunnerResult(
     fun getNumSplits() : Int { return splits?.size ?: 0 }
 
     fun getSplits(splitcontrols: List<SplitControl>?) : List<Split> {
+        //println("getSplits() called with splitcontrols.size = ${splits?.size}")
         var splitList = mutableListOf<Split>()
         if (splits != null && splitcontrols != null) {
             for (ctrl in splitcontrols) {
@@ -361,7 +362,7 @@ data class RunnerResult(
                 val splitPlace = splits.get(code+"_place")?.invoke()
                 val splitTimePlus = splits.get(code+"_timeplus")?.invoke()
                 if (splitResult != null && splitStatus != null && splitPlace != null && splitTimePlus != null) {
-                    for (i in 1..15) {
+                   // for (i in 1..15) {
                         splitList.add(
                             Split(
                                 ctrl.name,
@@ -372,7 +373,7 @@ data class RunnerResult(
                                 getTimeFromString(splitTimePlus.toString())
                             )
                         )
-                    }
+                   // }
                 }
             }
             splitList.sortBy { it.timeInt }

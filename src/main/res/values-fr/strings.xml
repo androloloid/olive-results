@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">LiveResult</string>
+    <string name="app_name">O'Live Result</string>
     <string name="search">Rechercher</string>
     <string name="start">Départ</string>
     <string name="clear1">Effacer</string>
@@ -35,4 +35,16 @@
     <string name="status_walk_over">--</string>
     <string name="status_move_up">--</string>
     <string name="status_Unknown">--</string>
+
+    <!-- runner status: text -->
+    <string name="status_long_OK">OK</string>
+    <string name="status_long_DNS">Absent</string>
+    <string name="status_long_DNF">Abandon</string>
+    <string name="status_long_MP">Poste manquant</string>
+    <string name="status_long_DSQ">Disqualifié</string>
+    <string name="status_long_out_of_time">Hors délais</string>
+    <string name="status_long_not_started_yet">--</string>
+    <string name="status_long_walk_over">Absent</string>
+    <string name="status_long_move_up">--</string>
+    <string name="status_long_Unknown">--</string>
 </resources>

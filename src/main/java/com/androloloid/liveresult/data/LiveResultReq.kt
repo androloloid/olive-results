@@ -46,7 +46,6 @@ class LiveResultReq {
         result = result.replace("\"class\":", "\"className\":")
         result = result.replace("\"club\":", "\"clubName\":")
         result = result.replace("\"start\": \"\"", "\"start\": 0")
-        // if in the string there are more than 2 " characters between : and , then remove the additionals " characters
         return result
     }
 
@@ -67,10 +66,6 @@ class LiveResultReq {
             val format = Json { ignoreUnknownKeys = true }
             result =
                 Competitions(format.decodeFromString<Competitions>(jsonString).competitions)
-            /*println("Competitions:")
-            result.competitions.forEach {
-                println("  "+it.name)
-            }*/
         } catch (e: Exception) {
             e.printStackTrace()
             return result
@@ -91,7 +86,6 @@ class LiveResultReq {
         jsonString = fixJsonStringBeforeDecode(jsonString)
         val format = Json { ignoreUnknownKeys = true }
         val competition = format.decodeFromString<Competition>(jsonString)
-        println("CompetitionInfo:" + competition.name)
         return competition
     }
 
@@ -100,7 +94,6 @@ class LiveResultReq {
         if (jsonString == null) {
             return LastPassing("Error", emptyList(), "")
         }
-        println("getPassing:" + jsonString)
         jsonString = fixJsonStringBeforeDecode(jsonString)
         val format  = Json { ignoreUnknownKeys = true }
         val result = format.decodeFromString<LastPassing>(jsonString)
@@ -113,14 +106,9 @@ class LiveResultReq {
         if (jsonString == null) {
             return CompetitionClasses("Error", emptyList(), "")
         }
-        println("getClasses:" + jsonString)
         jsonString = fixJsonStringBeforeDecode(jsonString)
         val format = Json { ignoreUnknownKeys = true }
         val competitionClasses = format.decodeFromString<CompetitionClasses>(jsonString)
-        println("Classes:")
-        competitionClasses.classes.forEach {
-            println("  "+it.className)
-        }
         return competitionClasses
     }
     suspend fun getClassResults(competitionId:Int, className:String, lastHash:String) : ClassResults {
@@ -133,7 +121,6 @@ class LiveResultReq {
         }
         // replace the string "class:" by "className:" in the jsonString
         jsonString = fixJsonStringBeforeDecode(jsonString)
-        println("getClassResults:" + jsonString)
         val format = Json { ignoreUnknownKeys = true }
         val result = format.decodeFromString<ClassResults>(jsonString)
         return result
@@ -148,38 +135,9 @@ class LiveResultReq {
             return ClubResults("Error", "", emptyList(),  hash="")
         }
         jsonString = fixJsonStringBeforeDecode(jsonString)
-        println("getClubResults:" + jsonString)
         val format = Json { ignoreUnknownKeys = true }
         val result = format.decodeFromString<ClubResults>(jsonString)
         return result
 
     }
-
-
 }
-/*
-class JsonInt32Converter : JsonConverter<int>
-{
-    public override bool CanConvert(Type typeToConvert)
-    {
-        return typeToConvert == typeof(int);
-    }
-
-    public override int Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        try
-        {
-            var value = reader.GetInt32();
-            return value;
-        }
-        catch
-        {
-            return 0;
-        }
-    }
-
-    public override void Write(Utf8JsonWriter writer, int value, JsonSerializerOptions options)
-    {
-        throw new NotImplementedException();
-    }
-}*/

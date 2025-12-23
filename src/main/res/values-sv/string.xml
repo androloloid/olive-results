@@ -1,30 +1,5 @@
 <!-- swedish https://www.sitepoint.com/iso-2-letter-language-codes/ -->
 <resources>
-    <string name="app_name">LiveResult</string>
-    <string name="search">Rechercher</string>
-    <string name="start">Start</string>
-    <string name="clear1">Effacer</string>
-    <string name="events">Compétitions</string>
-    <string name="class_results">Circuits</string>
-    <string name="club_results">Equipes</string>
-
-    <string name="no_results">Aucun résultat</string>
-    <string name="no_competition_selected">Sélectionnez une compétition</string>
-
-    <!-- club -->
-    <string name="search_club">Rechercher une équipe</string>
-    <string name="select_club">Sélectionner une équipe</string>
-    <string name="enter_club">Entrer un nom d\'équipe</string>
-    <string name="clubs_loaded">équipes trouvés</string>
-    <string name="loading_clubs">Chargement des équipes...</string>
-    <string name="loading_results">Chargement des résultats...</string>
-    <!-- competition -->
-    <string name="loading_competitions">Chargement des compétitions...</string>
-    <string name="refresh">Rafraîchir</string>
-
-    <!-- live result -->
-    <string name="select_class">"Sélectionner un circuit"</string>
-
     <!-- runner status: 3 letters max -->
     <string name="status_OK">OK</string>
     <string name="status_DNS">ej start</string>

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -34,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.androloloid.liveresult.data.ClassResults
 import com.androloloid.liveresult.data.RunnerResult
+import com.androloloid.liveresult.data.Split
+
 //import com.androloloid.liveresult.R // Make sure to import your app's R class
 
 
@@ -57,6 +60,26 @@ fun getStatusStringResource(status: Int): String {
         11 -> R.string.status_walk_over
         12 -> R.string.status_move_up
         else -> R.string.status_Unknown
+    }
+    return stringResource(id = resourceId)
+}
+@Composable
+fun getLongStatusStringResource(status: Int): String {
+    val resourceId = when (status) {
+        1 -> R.string.status_long_DNS
+        2 -> R.string.status_long_DNF
+        3 -> R.string.status_long_MP
+        4 -> R.string.status_long_DSQ
+        5 -> R.string.status_long_out_of_time
+        /*
+    9 -> label = stringResource(id = R.string.status_long_not_started_yet)
+    10 -> label = stringResource(id = R.string.status_long_not_started_yet)
+    */
+        11 -> R.string.status_long_walk_over
+        else -> null
+    }
+    if (resourceId == null) {
+        return status.toString()
     }
     return stringResource(id = resourceId)
 }
@@ -95,113 +118,29 @@ fun ResultItemV(viewModel: CompetitionViewModel, result: RunnerResult, classResu
         ) {
             Column(modifier = Modifier.fillMaxHeight()) {
                 Spacer(modifier = Modifier.weight(1f))
-                CircleChar( result.getRankingStr(), result.getStatus())
+                CircleChar(result.getRankingStr(), result.getStatus())
                 Spacer(modifier = Modifier.weight(1f))
             }
+
             Spacer(modifier = Modifier.width(5.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Row(modifier = Modifier) {
-                    val name = toLowerCamelCase(result.getName())
-                    Text(
-                        text = name,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(modifier = Modifier) {
-                    if (classResults == null) {
-                        Text(text = viewModel.runnersClass[result.getName()] ?: "",
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
-                        Spacer(modifier = Modifier.width(10.dp))
-                    }
-                    Text(
-                        text = result.clubName,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
+            NameCLubColumn(Modifier.weight(1f), result, classResults, viewModel)
+
             Spacer(modifier = Modifier.width(5.dp))
-            if (result.getStatus() != 0 || result.isRunning()) {
-                Column(
-                    modifier = Modifier.padding(horizontal = 5.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                )
-                {
-                    Text(
-                        text = stringResource(id = R.string.start),
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.bodySmall,
-                        softWrap = false
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = result.getStartTime(),
-                        style = MaterialTheme.typography.bodySmall,
-                        softWrap = false
-                    )
-                }
-            } else if (result.getStatus() == 0) {
-                Column(modifier = Modifier) {
-                    Row(modifier = Modifier) {
-                        Text(
-                            result.getResult(),
-                            fontWeight = FontWeight.Bold,
-                            softWrap = false
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(modifier = Modifier) {
-                        Text(
-                            text = result.getTimePlus(),
-                            style = MaterialTheme.typography.bodySmall,
-                            softWrap = false
-                        )
-                    }
-                }
-            } else {
-                // MP / disqualified / ...
-            }
+            TimeColumn(result)
         }
+
         if (expandedRow && result.hasSplits()) {
             Row(
                 modifier = Modifier
                     .padding(start = 8.dp, end = 4.dp, bottom=8.dp, top = 0.dp  )
                     .fillMaxWidth()
             ) {
-                for(split in result.getSplits(classResults?.splitcontrols)) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 5.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally)                        
-                    {
-                        Text(
-                            text = split.code,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.bodySmall,
-                            softWrap = false
-                        )
-                        Text(
-                            text = if (split.status == 0) { split.time + "("+split.place+")" } else { split.time },
-                            style = MaterialTheme.typography.bodySmall,
-                            softWrap = false
-                        )
-                        Text(
-                            text = "+"+split.timeplus,
-                            style = MaterialTheme.typography.bodySmall,
-                            softWrap = false
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.weight(1f))
+                SplitColumns(Modifier.weight(1f, fill = false), result.getSplits(classResults?.splitcontrols))
+                //Spacer(modifier = Modifier.weight(1f))
             }
         }
     }
 }
-
 
 @Composable
 fun ResultItemH(viewModel: CompetitionViewModel, result: RunnerResult, classResults: ClassResults?, modifier: Modifier) {
@@ -227,112 +166,22 @@ fun ResultItemH(viewModel: CompetitionViewModel, result: RunnerResult, classResu
                 CircleChar(result.getRankingStr(), result.getStatus())
                 Spacer(modifier = Modifier.weight(1f))
             }
-            Spacer(modifier = Modifier.width(5.dp))
-            // compute the size that a text  with 10 characters would take
+
+            // compute the size that a text with 10 characters would take
             val textMeasurer = rememberTextMeasurer()
-            val colNameWidth = textMeasurer.measure("_________").size.width
-            // TODO: pass it as a parameter and use class controls count
-            val modifierColName = if(result.getNumSplits() > 5) modifier.width(colNameWidth.dp) else modifier.weight(2f).fillMaxWidth()
-            Column(modifier = modifierColName) {
-                Row(modifier = Modifier) {
-                    val name = toLowerCamelCase(result.getName())
-                    Text(
-                        text = name,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Row(modifier = Modifier) {
-                    if (classResults == null) {
-                        Text(
-                            text = viewModel.runnersClass[result.getName()] ?: "",
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                    }
-                    Text(
-                        text = result.clubName,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-            }
+            val colNameWidth = textMeasurer.measure("__________").size.width
+            val modifierColName = if(classResults?.splitcontrols?.size?:0 > 0) modifier.width(colNameWidth.dp) else modifier.weight(2f).fillMaxWidth()
+
             Spacer(modifier = Modifier.width(5.dp))
-            if (result.getStatus() != 0 || result.isRunning()) {
-                Column(
-                    modifier = Modifier.padding(horizontal = 5.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                )
-                {
-                    Text(
-                        text = stringResource(id = R.string.start),
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.bodySmall,
-                        softWrap = false
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = result.getStartTime(),
-                        style = MaterialTheme.typography.bodySmall,
-                        softWrap = false
-                    )
-                }
-            } else if (result.getStatus() == 0) {
-                Column(modifier = Modifier) {
-                    Row(modifier = Modifier) {
-                        Text(
-                            result.getResult(),
-                            fontWeight = FontWeight.Bold,
-                            softWrap = false
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Row(modifier = Modifier) {
-                        Text(
-                            text = result.getTimePlus(),
-                            style = MaterialTheme.typography.bodySmall,
-                            softWrap = false
-                        )
-                    }
-                }
-            } else {
-                // MP / disqualified / ...
-            }
+            NameCLubColumn(modifierColName, result, classResults, viewModel)
+
             if (result.hasSplits()) {
                 Spacer(modifier = Modifier.width(15.dp))
-                for (split in result.getSplits(classResults?.splitcontrols)) {
-                    Column(
-                        modifier = Modifier.padding(horizontal = 5.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    )
-                    {
-                        Text(
-                            text = split.code,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.bodySmall,
-                            softWrap = false
-                        )
-                        Text(
-                            text = if (split.status == 0) {
-                                split.time + "(" + split.place + ")"
-                            } else {
-                                split.time
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            softWrap = false
-                        )
-                        Text(
-                            text = "+" + split.timeplus,
-                            style = MaterialTheme.typography.bodySmall,
-                            softWrap = false
-                        )
-                    }
-                }
+                SplitColumns(Modifier.weight(1f, fill = false), result.getSplits(classResults?.splitcontrols))
             }
+
+            Spacer(modifier = Modifier.width(5.dp))
+            TimeColumn(result)
         }
     }
 }
@@ -348,7 +197,6 @@ fun CircleChar(text: String, runner_status_id: Int, modifier: Modifier = Modifie
         txtColor = MaterialTheme.colorScheme.onSurface
         bgColor = MaterialTheme.colorScheme.surface
     }
-    // TODO start time
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
@@ -361,5 +209,119 @@ fun CircleChar(text: String, runner_status_id: Int, modifier: Modifier = Modifie
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )
+    }
+}
+
+@Composable
+fun NameCLubColumn(modifier: Modifier, result: RunnerResult, classResults: ClassResults?, viewModel: CompetitionViewModel) {
+    Column(modifier = modifier) {
+        Row(modifier = Modifier) {
+            val name = toLowerCamelCase(result.getName())
+            Text(
+                text = name,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight.Bold
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Row(modifier = Modifier) {
+            if (classResults == null) {
+                Text(
+                    text = viewModel.runnersClass[result.getName()] ?: "",
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+            }
+            Text(
+                text = result.clubName,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+fun TimeColumn(result: RunnerResult) {
+    Column(
+        modifier = Modifier.padding(horizontal = 5.dp).wrapContentWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    )
+    {
+        if (result.getStatus() == 0) {
+            Text(
+                result.getResult(),
+                fontWeight = FontWeight.Bold,
+                softWrap = false
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = result.getTimePlus(),
+                style = MaterialTheme.typography.bodySmall,
+                softWrap = false
+            )
+        } else if (result.isRunning()) {
+            Text(
+                text = stringResource(id = R.string.start),
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.bodySmall,
+                softWrap = false
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = result.getStartTime(),
+                style = MaterialTheme.typography.bodySmall,
+                softWrap = false
+            )
+        } else {
+            // MP / disqualified / ...
+            Text(
+                getLongStatusStringResource(result.getStatus()),
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.bodySmall,
+                softWrap = false
+            )
+        }
+    }
+}
+
+@Composable
+fun SplitColumns(modifier : Modifier, splits: List<Split>) {
+    Column(modifier = modifier)
+    {
+        Row() {
+            for (split in splits) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 5.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                )
+                {
+                    Text(
+                        text = split.code,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.bodySmall,
+                        softWrap = false
+                    )
+                    Text(
+                        text = if (split.status == 0) {
+                            split.time + "(" + split.place + ")"
+                        } else {
+                            split.time
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        softWrap = false
+                    )
+                    Text(
+                        text = "+" + split.timeplus,
+                        style = MaterialTheme.typography.bodySmall,
+                        softWrap = false
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.weight(1f))
+        }
     }
 }

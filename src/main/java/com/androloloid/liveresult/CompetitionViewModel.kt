@@ -27,7 +27,6 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
 
     var competitions by mutableStateOf(Competitions(emptyList()))
         private set
-
     var isLoading by mutableStateOf(false)
         private set
     var isLoadingClubs by mutableStateOf(false)
@@ -141,7 +140,6 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
                     selectClass(competitionClasses.classes[0])
                 }
             }
-            //loadClubNames(selectedCompetition)
         }
     }
 
@@ -172,7 +170,14 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
         }
 
         if (refreshTime < 0) {
-            loadClassResults()
+            // loadClass resuls every REFRESH_TIME
+            // to reduce network impact, just check if there are new resulsts before calling loadClassResults
+            if (needRefresh) {
+                needRefresh = false
+                loadClassResults()
+            } else {
+                checkNeedRefresh()
+            }
             refreshTime = REFRESH_TIME
         } else {
             refreshTime -= max(tickMS/100, 1)
@@ -259,7 +264,14 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
         }
 
         if (refreshTime < 0) {
-            activeClubFilter = "" // force reload result
+            // loadClass results every REFRESH_TIME
+            // to reduce network impact, just check if there are new resulsts before calling loadClassResults
+            if (needRefresh) {
+                needRefresh = false
+                activeClubFilter = "" // force reload club result
+            } else {
+                checkNeedRefresh()
+            }
             refreshTime = REFRESH_TIME
         } else {
             refreshTime -= max(tickMS/100, 1)
@@ -270,5 +282,17 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
             return 0f
         else
             return 1f - refreshTime.toFloat()/REFRESH_TIME
+    }
+
+    // function which has less impact on the network
+    private var lastRefreshHash  by mutableStateOf("")
+    private var needRefresh by mutableStateOf(false)
+    fun checkNeedRefresh() {
+        viewModelScope.launch {
+            val lastPassing = LiveResultReq().getLastPassing(selectedCompetitionId, lastRefreshHash)
+            lastRefreshHash = lastPassing.hash
+            needRefresh = lastPassing.passings.isNotEmpty()
+            println("needRefresh=$needRefresh")
+        }
     }
 }

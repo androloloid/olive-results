@@ -73,7 +73,7 @@ fun ClubResultsScreen(navController: NavController, viewModel: CompetitionViewMo
             }
         }
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).padding(16.dp)) {
+        Column(modifier = Modifier.padding(padding).padding(8.dp)) {
             ClubResultsContent(viewModel, searchQuery, sortMode, onSearchQueryChange = { searchQuery = it })
         }
     }
