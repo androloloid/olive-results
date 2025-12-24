@@ -1,0 +1,14 @@
+<!-- swedish https://www.sitepoint.com/iso-2-letter-language-codes/ -->
+<resources>
+    <!-- runner status: 3 letters max -->
+    <string name="status_OK">OK</string>
+    <string name="status_DNS">ej start</string>
+    <string name="status_DNF">Abd</string>
+    <string name="status_MP">Felst</string>
+    <string name="status_DSQ">DSQ</string>
+    <string name="status_out_of_time">HD</string>
+    <string name="status_not_started_yet">--</string>
+    <string name="status_walk_over">--</string>
+    <string name="status_move_up">--</string>
+    <string name="status_Unknown">--</string>
+</resources>
