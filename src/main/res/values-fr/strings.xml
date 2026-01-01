@@ -2,7 +2,7 @@
     <string name="app_name">O\'Live Results</string>
     <string name="search">Rechercher</string>
     <string name="start">Départ</string>
-    <string name="clear1">Effacer</string>
+    <string name="clear">Effacer</string>
     <string name="events">Compétitions</string>
     <string name="class_results">Circuits</string>
     <string name="club_results">Equipes</string>

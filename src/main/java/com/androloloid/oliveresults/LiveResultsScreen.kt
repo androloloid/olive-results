@@ -1,5 +1,24 @@
+/*
+This file is part of O'Live Results.
+
+O'Live Results is free software: you can redistribute it and/or modify it under the terms of the
+GNU General Public License as published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+O'Live Results is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with O'Live Results. If
+not, see <https://www.gnu.org/licenses/>
+
+@Author: androloloid@gmail.com
+@Date: 2026-01
+ */
+
 package com.androloloid.oliveresults
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,11 +50,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -48,6 +69,15 @@ import com.androloloid.oliveresults.data.RunnerResult
 fun LiveResultsScreen(navController: NavController, viewModel: CompetitionViewModel) {
     var searching by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
+
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        if (!viewModel.hasShownToast /*&& viewModel.selectedCompetition.isToday()*/) {
+            Toast.makeText(context, "Automatic results refresh", Toast.LENGTH_LONG).show()
+            viewModel.hasShownToast = true
+        }
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -94,13 +124,11 @@ private fun ColumnScope.LiveResultsContent(
 ) {
     ClassSelectorDropdown(viewModel)
 
-    if (viewModel.classResults?.needRefresh() == true) {
-        RefreshProgressBar(
+    RefreshProgressBar(
             viewModel,
             key = viewModel.selectedClass,
             modifier = Modifier
         ) { viewModel.periodicClassResultRefreshTask() }
-    }
 
     if (searching) {
         ResultsSearchField(
@@ -194,7 +222,7 @@ private fun ResultsSearchField(
         trailingIcon = {
             Icon(
                 Icons.Filled.Clear,
-                contentDescription = stringResource(R.string.clear1),
+                contentDescription = stringResource(R.string.clear),
                 modifier = Modifier.clickable {
                     onSearchQueryChange("")
                     onDone()

@@ -1,9 +1,29 @@
+/*
+This file is part of O'Live Results.
+
+O'Live Results is free software: you can redistribute it and/or modify it under the terms of the
+GNU General Public License as published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+O'Live Results is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with O'Live Results. If
+not, see <https://www.gnu.org/licenses/>
+
+@Author: androloloid@gmail.com
+@Date: 2026-01
+ */
+
 package com.androloloid.oliveresults.data
 
 import android.annotation.SuppressLint
 import kotlinx.serialization.Serializable
-import java.time.LocalDate
 import java.util.Locale
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZonedDateTime
 
 // This class represents the top-level JSON structure, which is an object containing a list of competitions.
 @SuppressLint("UnsafeOptInUsageError")
@@ -13,7 +33,7 @@ data class Competitions(
 {
     fun sortForDisplay() {
         //remove competitions which are returning true for isInTheFuture() or  isNMonthOld()
-        competitions = competitions.filter { !it.isInTheFuture() && !it.isNMonthOld() }
+        competitions = competitions.filter { !it.isInTheFuture() && !it.isNMonthOld(4) }
         // sort with the higher date first
         competitions = competitions.sortedByDescending { it.date }
     }
@@ -27,7 +47,8 @@ data class Competitions(
    "timediff" : 1,
    "multidaystage" : 1,
    "multidayfirstday" : 10278
- */
+
+  */
 @SuppressLint("UnsafeOptInUsageError")
 @Serializable
 data class Competition(
@@ -39,6 +60,8 @@ data class Competition(
     val multidaystage: Int? = null,
     val multidayfirstday: Int? = null)
 {
+    // timediff represents number of hours that the timezone of the competition is + or - compared to Central European time (CET)
+    // timediff = -1  : eventLocalTime = FranceTime - 1h  -> 10h local time = 11h CET (Paris)
     fun isInTheFuture(): Boolean {
         val today = LocalDate.now()
         val eventDate = LocalDate.parse(date)
@@ -80,6 +103,8 @@ data class Competition(
    ],
    "hash" : "abcdef...."
 }
+ getLastPassing
+{ "status": "OK", "passings" : [{"passtime": "11:39:22", "runnerName": "Alona OLIINYK", "class": "W40", "control": 1000, "controlName" : "", "time": "46:06" },{"passtime": "11:38:52", "runnerName": "class": "M55", "control": 1000, "controlName" : "", "time": "63:18" },{"passtime": "11:38:51", "runnerName": "Samuel SARANEN", "class": "M14", "control": 1000, "controlName" : "", "time": "34:20" }], "hash": "83c6b6e2f9aaf41e67730c28d0adbd33"}
  */
 @SuppressLint("UnsafeOptInUsageError")
 @Serializable
@@ -95,7 +120,7 @@ data class Passing(
     val className: String,
     val control: Int,
     val controlName: String,
-    val time: Int
+    val time: String
 )
 
 /* example of competitionClasses
@@ -201,14 +226,6 @@ data class ClassResults(
     val results: List<RunnerResult>,
     val hash: String)
 {
-    fun needRefresh() : Boolean {
-        for (r in results) {
-            if (r.isRunning()) {
-                return true
-            }
-        }
-        return false
-    }
 }
 
 @SuppressLint("UnsafeOptInUsageError")
@@ -219,14 +236,6 @@ data class ClubResults(
     val results: List<RunnerResult>,
     val hash: String)
 {
-    fun needRefresh() : Boolean {
-        for (r in results) {
-            if (r.isRunning()) {
-                return true
-            }
-        }
-        return false
-    }
 }
 @SuppressLint("UnsafeOptInUsageError")
 @Serializable
@@ -255,14 +264,7 @@ data class RunnerResult(
     private val start: Long,
     private val splits: Map<String, MyInt>? = null
 ) {
-    private fun getTimeFromString(t: String): String {
-        val tSeconds = try {
-            // The API can return time in centiseconds as a string, or an already formatted time string
-            t.toLong() / 100
-        } catch (e: NumberFormatException) {
-            return t // It's already a formatted string like "17:02" or "+01:21"
-        }
-
+    private fun getTimeToString(tSeconds: Int): String {
         val hours = tSeconds / 3600
         val minutes = (tSeconds % 3600) / 60
         val seconds = tSeconds % 60
@@ -272,6 +274,16 @@ data class RunnerResult(
         } else {
             String.format("%2d:%02d", minutes, seconds)
         }
+    }
+
+    private fun getTimeFromString(t: String): String {
+        val tSeconds = try {
+            // The API can return time in centiseconds as a string, or an already formatted time string
+            t.toInt() / 100
+        } catch (e: NumberFormatException) {
+            return t // It's already a formatted string like "17:02" or "+01:21"
+        }
+        return getTimeToString(tSeconds)
     }
 
     // time or status if status is not valid
@@ -289,6 +301,22 @@ data class RunnerResult(
 
     fun getStartTime(): String {
         return getTimeFromString(start.toString())
+    }
+    private fun getStartTimeCETseconds(competition: Competition?) : Long {
+        val localStartSeconds = start/100 - (competition?.timediff?:0) * 3600
+        return localStartSeconds
+    }
+    fun getTimeFromStart(competition: Competition?): String {
+        val cetZone = ZoneId.of("CET")
+        val cetTime = ZonedDateTime.now(cetZone).toLocalTime()
+        val startTime = getStartTimeCETseconds(competition)
+        //println("getStartTimeCETseconds: $startTime cetTime: $cetTime  ${cetTime.toSecondOfDay()}")
+        if (startTime >= cetTime.toSecondOfDay()) { // TODO replace it with >=
+            return ""
+        }
+        val runTime = cetTime.minusSeconds(startTime)
+
+        return "("+getTimeToString(runTime.toSecondOfDay())+")"
     }
 
     // diff with first runner
@@ -327,14 +355,22 @@ data class RunnerResult(
                 return 10003
             } else if (status == 4L) { // Disqualified
                 return 10004
+            } else if (status == 9L || status == 10L) { // running later
+                return 20000 + (start/100).toInt() // 20 000 + 86 400 = 106 400
             } else {
                 // not started later
-                return 10010 + status.toInt()
+                return 110000 + status.toInt()
             }
         }
     }
-    fun isRunning(): Boolean {
-        return /*status == 1L ||*/ status == 9L || status == 10L
+    fun isRunningToday(andHasStartTime:Boolean = false): Boolean {
+        val hasStartStatus = status == 9L || status == 10L
+        val hasStartTime = start > 0
+        if (andHasStartTime) {
+            return hasStartStatus && hasStartTime
+        } else {
+            return hasStartStatus
+        }
     }
 
     fun getStatus(): Int {

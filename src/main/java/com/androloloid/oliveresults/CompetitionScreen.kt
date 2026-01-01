@@ -1,3 +1,21 @@
+/*
+This file is part of O'Live Results.
+
+O'Live Results is free software: you can redistribute it and/or modify it under the terms of the
+GNU General Public License as published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+O'Live Results is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with O'Live Results. If
+not, see <https://www.gnu.org/licenses/>
+
+@Author: androloloid@gmail.com
+@Date: 2026-01
+ */
+
 package com.androloloid.oliveresults
 
 import androidx.compose.foundation.clickable
@@ -21,78 +39,104 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.androloloid.oliveresults.data.Competition
 import com.androloloid.oliveresults.data.Competitions
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.ui.res.stringResource
-
-//https://medium.com/@anu91ch/scan-qr-code-bar-code-android-kotlin-tutorial-using-ml-kit-f76b48e3289b
+import kotlinx.coroutines.launch
 
 @Composable
 fun CompetitionScreen(navController: NavController, viewModel: CompetitionViewModel) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     val listState = rememberLazyListState()
     val keyboardController = LocalSoftwareKeyboardController.current
+    val scope = rememberCoroutineScope()
+    val showScrollToTopButton by remember { derivedStateOf { listState.firstVisibleItemIndex > 0 } }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(8.dp, 8.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier.weight(1f),
-                placeholder = { Text(stringResource(R.string.search)) },
-                singleLine = true,
-                leadingIcon = {
-                    Icon(
-                        Icons.Filled.Search,
-                        contentDescription = "Search",
-                        //modifier = Modifier.clickable { searchQuery = TextFieldValue("") }
-                    )
-                },
-                trailingIcon = {
-                    Icon(
-                        Icons.Filled.Clear,
-                        contentDescription = "Clear",
-                        modifier = Modifier.clickable { searchQuery = TextFieldValue(""); keyboardController?.hide()}
-                    )
-                },
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = { })
+
+    Scaffold(
+        floatingActionButton = {
+            if (showScrollToTopButton) {
+                FloatingActionButton(
+                    onClick = {
+                        scope.launch {
+                            listState.animateScrollToItem(0)
+                        }
+                    },
+                ) {
+                    Icon(painterResource(R.drawable.first), contentDescription = "Scroll to first")
+                }
+            }
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 8.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text(stringResource(R.string.search)) },
+                    singleLine = true,
+                    leadingIcon = {
+                        Icon(
+                            Icons.Filled.Search,
+                            contentDescription = "Search",
+                            //modifier = Modifier.clickable { searchQuery = TextFieldValue("") }
+                        )
+                    },
+                    trailingIcon = {
+                        Icon(
+                            Icons.Filled.Clear,
+                            contentDescription = stringResource(R.string.clear),
+                            modifier = Modifier.clickable {
+                                searchQuery = TextFieldValue(""); keyboardController?.hide()
+                            }
+                        )
+                    },
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = { })
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            CompetitionList(
+                competitions = viewModel.competitions,
+                navController = navController,
+                viewModel = viewModel,
+                searchQuery = searchQuery.text,
+                listState = listState
             )
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        CompetitionList(
-            competitions = viewModel.competitions,
-            navController = navController,
-            viewModel = viewModel,
-            searchQuery = searchQuery.text,
-            listState = listState
-        )
     }
 }
 
@@ -180,7 +224,13 @@ private fun CompetitionListContent(
 
     LaunchedEffect(selectedCompetitionIndex) {
         if (selectedCompetitionIndex != -1) {
-            listState.animateScrollToItem(selectedCompetitionIndex)
+            // check if selectedCompetitionIndex is visible in the list
+            val isItemVisible = listState.layoutInfo.visibleItemsInfo.any {
+                it.index == selectedCompetitionIndex
+            }
+            if (!isItemVisible) {
+                listState.animateScrollToItem(selectedCompetitionIndex)
+            }
         }
     }
 
@@ -211,6 +261,8 @@ fun CompetitionItem(
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clickable {
+                println("Clicked on competition: ${competition.name}")
+                println("   timediff: ${competition.timediff}")
                 viewModel.selectCompetition(competition)
                 navController.navigate(Screen.LiveResults.route)
             },

@@ -1,3 +1,21 @@
+/*
+This file is part of O'Live Results.
+
+O'Live Results is free software: you can redistribute it and/or modify it under the terms of the
+GNU General Public License as published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+O'Live Results is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with O'Live Results. If
+not, see <https://www.gnu.org/licenses/>
+
+@Author: androloloid@gmail.com
+@Date: 2026-01
+ */
+
 package com.androloloid.oliveresults
 
 import android.app.Application
@@ -25,6 +43,8 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
 
     private val sharedPreferences = application.getSharedPreferences("LiveResultPrefs", Context.MODE_PRIVATE)
 
+    var hasShownToast by mutableStateOf(false)
+
     var competitions by mutableStateOf(Competitions(emptyList()))
         private set
     var isLoading by mutableStateOf(false)
@@ -45,14 +65,16 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
 
     var selectedClass by mutableStateOf<CompetitionClass?>(null)
         private set
+    var selectedClassNamePreference by mutableStateOf("")
+        private set
+
 
     var classResults by mutableStateOf<ClassResults?>(null)
         private set
 
     var selectedClubs by mutableStateOf<MutableList<String>>(mutableListOf())
         private set
-    var selectedClub1 by mutableStateOf<String?>(null)
-        private set
+    var selectedClubName by mutableStateOf<String>("")
     var selectedClubsResults by mutableStateOf<List<RunnerResult>>(emptyList())
         private set
     var clubs by mutableStateOf<MutableList<String>>(mutableListOf())
@@ -68,7 +90,10 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     init {
+        // load previous settings
         selectedCompetitionId = sharedPreferences.getInt("selectedCompetitionId", 0)
+        selectedClassNamePreference = sharedPreferences.getString("selectedClassName", "") ?: ""
+        selectedClubName = sharedPreferences.getString("selectedClubName", "") ?: ""
     }
 
     fun loadCompetitions() {
@@ -126,7 +151,11 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
                 }
                 // sort club name alphabetically
                 clubs.sort()
-                println("clubs loaded: ${clubs.size}")
+
+                if (selectedClubName != "") {
+                    selectClubs(selectedClubName)
+                }
+
                 isLoadingClubs = false
             }
         }
@@ -137,7 +166,13 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
             selectedCompetition?.let {
                 competitionClasses = LiveResultReq().getClasses(it.id, "")
                 if (competitionClasses.classes.isNotEmpty()) {
-                    selectClass(competitionClasses.classes[0])
+                    val it = competitionClasses.classes.find { it.className == selectedClassNamePreference }
+                    if (it != null) {
+                        selectClass(it)
+                    } else {
+                        selectClass(competitionClasses.classes[0])
+                        selectedClassNamePreference = "" // do not use same class when changing the event
+                    }
                 }
             }
         }
@@ -146,6 +181,9 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
     fun selectClass(competitionClass: CompetitionClass) {
         isLoading = true
         selectedClass = competitionClass
+        selectedClassNamePreference = competitionClass.className
+        sharedPreferences.edit().putString("selectedClassName", selectedClassNamePreference).apply()
+
         refreshTime = REFRESH_TIME
         loadClassResults()
         isLoading = false
@@ -197,10 +235,10 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
         }
     }
 
-    suspend fun clubResultThreadProcedure() {
+    private suspend fun clubResultThreadProcedure() {
         while (true) {
             val textToSearch = newClubFilter
-            if (activeClubFilter != textToSearch && !isLoadingClubsResults) {
+            if (activeClubFilter != textToSearch && !isLoadingClubsResults && !isLoadingClubs) {
                 activeClubFilter = textToSearch
                 selectClubsAndLoad(activeClubFilter)
             }
@@ -211,19 +249,17 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
     private fun selectClubsAndLoad(filter: String) {
         if (filter.isNotEmpty()) {
             selectedClubs.clear()
-            selectedClub1=null
+            selectedClubName=filter
             for (clubName in clubs) {
                 if (clubName.contains(filter, ignoreCase = true)) {
                     selectedClubs.add(clubName)
                 }
             }
-            if (selectedClubs.isNotEmpty()) {
-                selectedClub1 = selectedClubs[0]
-            }
+            sharedPreferences.edit().putString("selectedClubName", selectedClubName).apply()
             loadClubResults()
         } else {
             selectedClubs.clear()
-            selectedClub1=null
+            selectedClubName=""
             selectedClubsResults = emptyList()
         }
     }
@@ -240,7 +276,6 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
             val tmpSelectedClubs = selectedClubs.toList()
             selectedCompetition?.let { competition ->
                 tmpSelectedClubs.forEach { clubName ->
-                    //print(" load club results for clubName=$clubName")
                     val result = LiveResultReq().getClubResults(competition.id, clubName, "")
                     tmpSelectedClubsResults.addAll(result.results)
                     if (newClubFilter != activeClubFilter) {
@@ -292,7 +327,6 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
             val lastPassing = LiveResultReq().getLastPassing(selectedCompetitionId, lastRefreshHash)
             lastRefreshHash = lastPassing.hash
             needRefresh = lastPassing.passings.isNotEmpty()
-            println("needRefresh=$needRefresh")
         }
     }
 }
