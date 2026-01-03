@@ -31,6 +31,7 @@ import com.androloloid.oliveresults.data.CompetitionClass
 import com.androloloid.oliveresults.data.CompetitionClasses
 import com.androloloid.oliveresults.data.Competitions
 import com.androloloid.oliveresults.data.LiveResultReq
+import com.androloloid.oliveresults.data.Passing
 import com.androloloid.oliveresults.data.RunnerResult
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -40,6 +41,8 @@ import kotlin.math.max
 class CompetitionViewModel(application: Application) : AndroidViewModel(application) {
     private val REFRESH_TIME = 200 // *0.1s
     private var refreshTime by mutableStateOf(-1)
+    // getRefreshProgress return a pair of (currentProgress, lastRefreshTime)
+    var lastRefreshTime by mutableStateOf("")
 
     private val sharedPreferences = application.getSharedPreferences("LiveResultPrefs", Context.MODE_PRIVATE)
 
@@ -83,6 +86,10 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
     var runnersClass by mutableStateOf<MutableMap<String, String>>(mutableMapOf())
         private set
 
+    var lastPassingList by mutableStateOf<List<Passing>>(emptyList())
+        private set
+
+
     fun init() {
         if (competitions.competitions.isEmpty()) {
             loadCompetitions()
@@ -113,6 +120,11 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     fun selectCompetition(competition: Competition) {
+        if (selectedCompetition == competition) {
+            return
+        }
+
+        println("selectCompetition: $competition")
         isLoading = true
 
         // reset
@@ -125,6 +137,7 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
         selectedClubs.clear()
         competitionClasses = CompetitionClasses("OK", emptyList(), "")
         classResults = null
+        lastPassingList = emptyList()
 
         // load classes
         loadClasses()
@@ -185,6 +198,7 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
         sharedPreferences.edit().putString("selectedClassName", selectedClassNamePreference).apply()
 
         refreshTime = REFRESH_TIME
+        lastRefreshTime = ""
         loadClassResults()
         isLoading = false
     }
@@ -193,7 +207,13 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
         viewModelScope.launch {
             selectedCompetition?.let { competition ->
                 selectedClass?.let { competitionClass ->
-                    classResults = LiveResultReq().getClassResults(competition.id, competitionClass.className, "")
+                    val newClassResults = LiveResultReq().getClassResults(competition.id,
+                        competitionClass.className,
+                        classResults?.hash?:"")
+                    if (newClassResults.status == "OK") {
+                        classResults = newClassResults
+                    }
+                    lastRefreshTime = java.time.LocalTime.now().toString()
                 }
             }
         }
@@ -208,14 +228,8 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
         }
 
         if (refreshTime < 0) {
-            // loadClass resuls every REFRESH_TIME
-            // to reduce network impact, just check if there are new resulsts before calling loadClassResults
-            if (needRefresh) {
-                needRefresh = false
-                loadClassResults()
-            } else {
-                checkNeedRefresh()
-            }
+            // load class results every REFRESH_TIME
+            loadClassResults()
             refreshTime = REFRESH_TIME
         } else {
             refreshTime -= max(tickMS/100, 1)
@@ -250,6 +264,7 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
         if (filter.isNotEmpty()) {
             selectedClubs.clear()
             selectedClubName=filter
+            lastClubResultHash = ""
             for (clubName in clubs) {
                 if (clubName.contains(filter, ignoreCase = true)) {
                     selectedClubs.add(clubName)
@@ -260,10 +275,12 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
         } else {
             selectedClubs.clear()
             selectedClubName=""
+            lastClubResultHash = ""
             selectedClubsResults = emptyList()
         }
     }
 
+    private var lastClubResultHash = ""
     private fun loadClubResults() {
         if (selectedClubs.isEmpty()) {
             return
@@ -272,18 +289,31 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
             isLoadingClubsResults = true
             refreshTime = REFRESH_TIME
             // compare the content of selectedClubs with previousSelectedClubs
-            val tmpSelectedClubsResults = mutableListOf<RunnerResult>()
+            var tmpSelectedClubsResults = mutableListOf<RunnerResult>()
             val tmpSelectedClubs = selectedClubs.toList()
             selectedCompetition?.let { competition ->
                 tmpSelectedClubs.forEach { clubName ->
-                    val result = LiveResultReq().getClubResults(competition.id, clubName, "")
-                    tmpSelectedClubsResults.addAll(result.results)
+                    if (tmpSelectedClubs.size == 1 &&  selectedClubsResults.size == 1) {
+                        val result = LiveResultReq().getClubResults(competition.id, clubName, lastClubResultHash)
+                        if (result.status == "OK") {
+                            tmpSelectedClubsResults.addAll(result.results)
+                        } else {
+                            tmpSelectedClubsResults = selectedClubsResults.toMutableList()
+                        }
+                        lastClubResultHash = result.hash
+                    } else {
+                        val result = LiveResultReq().getClubResults(competition.id, clubName, "")
+                        tmpSelectedClubsResults.addAll(result.results)
+                        lastClubResultHash = ""
+                    }
                     if (newClubFilter != activeClubFilter) {
+                        // new club filtering is available, stop current result queries to restart a new result query
                         return@forEach
                     }
                 }
             }
             selectedClubsResults = tmpSelectedClubsResults.toList()
+            lastRefreshTime = java.time.LocalTime.now().toString()
             isLoadingClubsResults = false
         }
     }
@@ -301,8 +331,8 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
         if (refreshTime < 0) {
             // loadClass results every REFRESH_TIME
             // to reduce network impact, just check if there are new resulsts before calling loadClassResults
-            if (needRefresh) {
-                needRefresh = false
+            if (hasNewResults) {
+                hasNewResults = false
                 activeClubFilter = "" // force reload club result
             } else {
                 checkNeedRefresh()
@@ -312,6 +342,7 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
             refreshTime -= max(tickMS/100, 1)
         }
     }
+
     fun getRefreshProgress() : Float {
         if (refreshTime < 0)
             return 0f
@@ -320,13 +351,17 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     // function which has less impact on the network
-    private var lastRefreshHash  by mutableStateOf("")
-    private var needRefresh by mutableStateOf(false)
+    private var lastPassingHash  by mutableStateOf("")
+    private var hasNewResults by mutableStateOf(false)
     fun checkNeedRefresh() {
         viewModelScope.launch {
-            val lastPassing = LiveResultReq().getLastPassing(selectedCompetitionId, lastRefreshHash)
-            lastRefreshHash = lastPassing.hash
-            needRefresh = lastPassing.passings.isNotEmpty()
+            val lastPassing = LiveResultReq().getLastPassing(selectedCompetitionId, lastPassingHash)
+            lastPassingHash = lastPassing.hash
+            hasNewResults = lastPassing.passings.isNotEmpty()
+            if (lastPassing.status == "OK") {
+                lastPassingList = lastPassing.passings
+            }
+            lastRefreshTime = java.time.LocalTime.now().toString()
         }
     }
 }

@@ -124,7 +124,7 @@ class LiveResultReq {
             println(jsonString)
             jsonString = fixJsonStringBeforeDecode(jsonString)
             if (jsonString.contains("\"status\": \"NOT MODIFIED\"")) {
-                return LastPassing("OK", emptyList(), lastHash)
+                return LastPassing("NOT MODIFIED", emptyList(), lastHash)
             }
             val format  = Json { ignoreUnknownKeys = true }
             val result = format.decodeFromString<LastPassing>(jsonString)
@@ -142,7 +142,12 @@ class LiveResultReq {
             if (jsonString == null) {
                 return CompetitionClasses("Error", emptyList(), "")
             }
+            println("getClasses")
+            println(jsonString)
             jsonString = fixJsonStringBeforeDecode(jsonString)
+            if (jsonString.contains("\"status\": \"NOT MODIFIED\"")) {
+                return CompetitionClasses("NOT MODIFIED", emptyList(), lastHash)
+            }
             val format = Json { ignoreUnknownKeys = true }
             val competitionClasses = format.decodeFromString<CompetitionClasses>(jsonString)
             return competitionClasses
@@ -160,8 +165,13 @@ class LiveResultReq {
             if (jsonString == null) {
                 return ClassResults("Error", "", emptyList(), emptyList(), hash = "")
             }
+            println("getClassResults")
+            println(jsonString)
             // replace the string "class:" by "className:" in the jsonString
             jsonString = fixJsonStringBeforeDecode(jsonString)
+            if (jsonString.contains("\"status\": \"NOT MODIFIED\"")) {
+                return ClassResults("NOT MODIFIED", "", emptyList(), emptyList(), hash = "")
+            }
             val format = Json { ignoreUnknownKeys = true }
             val result = format.decodeFromString<ClassResults>(jsonString)
             return result
@@ -180,7 +190,12 @@ class LiveResultReq {
             if (jsonString == null) {
                 return ClubResults("Error", "", emptyList(), hash = "")
             }
+            println("getClubResults")
+            println(jsonString)
             jsonString = fixJsonStringBeforeDecode(jsonString)
+            if (jsonString.contains("\"status\": \"NOT MODIFIED\"")) {
+                return ClubResults("NOT MODIFIED", "", emptyList(), hash = "")
+            }
             val format = Json { ignoreUnknownKeys = true }
             val result = format.decodeFromString<ClubResults>(jsonString)
             return result

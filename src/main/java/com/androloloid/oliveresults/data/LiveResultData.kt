@@ -292,7 +292,9 @@ data class RunnerResult(
             if (status == 0L) {
                 return getTimeFromString(result)
             } else {
-                return RunnerResultStatus(status.toInt()).getStatusString()
+                return "---"
+                // DEBUG:
+                // return RunnerResultStatus(status.toInt()).getStatusString()
             }
         } catch (e: Exception) {
             return "---"
@@ -364,7 +366,7 @@ data class RunnerResult(
         }
     }
     fun isRunningToday(andHasStartTime:Boolean = false): Boolean {
-        val hasStartStatus = status == 9L || status == 10L
+        val hasStartStatus = (status == 9L) || (status == 10L)
         val hasStartTime = start > 0
         if (andHasStartTime) {
             return hasStartStatus && hasStartTime

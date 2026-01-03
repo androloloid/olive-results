@@ -101,7 +101,8 @@ fun getLongStatusStringResource(status: Int): String {
         else -> null
     }
     if (resourceId == null) {
-        return status.toString()
+        return ""
+        // return status.toString()  // DEBUG
     }
     return stringResource(id = resourceId)
 }
@@ -298,6 +299,7 @@ fun TimeColumn(result: RunnerResult, competition : Competition?, displayStartIfN
         horizontalAlignment = Alignment.CenterHorizontally
     )
     {
+        println("name=${result.getName()}, status=${result.getStatus()}, result=${result.getResult()}, runTime = ${result.getTimeFromStart(competition)}, getLongStatusStringResource(result.getStatus())= ${getLongStatusStringResource(result.getStatus())}")
         if (result.getStatus() == 0) {
             Text(
                 result.getResult(),
