@@ -1,0 +1,51 @@
+<!-- finnish -->
+<resources>
+    <string name="app_name">O\'Live Results</string>
+    <string name="search">Haku</string>
+    <string name="start">Alku</string>
+    <string name="clear">Tyhjennä</string>
+    <string name="events">Tapahtumat</string>
+    <string name="class_results">Sarjan</string>
+    <string name="club_results">Joukkueen</string>
+
+    <string name="no_results">Ei näytettäviä tuloksia</string>
+    <string name="no_competition_selected">Tapahtumaa ei ole valittu</string>
+
+    <!-- club -->
+    <string name="search_club">Etsi joukkuetta</string>
+    <string name="select_club">"Valitse joukkue"</string>
+    <string name="enter_club">Anna joukkueen nimi nähdäksesi tulokset</string>
+    <string name="clubs_loaded">joukkuetta löytyi</string>
+    <string name="loading_clubs">Ladataan joukkueita...</string>
+    <string name="loading_results">Ladataan tuloksia...</string>
+    <!-- competition -->
+    <string name="loading_competitions">Ladataan tapahtumia...</string>
+    <string name="refresh">Päivitä</string>
+
+    <!-- live result -->
+    <string name="select_class">"Valitse sarja"</string>
+
+    <!-- runner status: 3 letters max -->
+    <string name="status_OK">OK</string>
+    <string name="status_DNS">DNS</string>
+    <string name="status_DNF">KESK</string>
+    <string name="status_MP">HYL</string>
+    <string name="status_DSQ">DSQ</string>
+    <string name="status_out_of_time">YLI</string>
+    <string name="status_not_started_yet">--</string>
+    <string name="status_walk_over">--</string>
+    <string name="status_move_up">--</string>
+    <string name="status_Unknown">--</string>
+
+    <!-- runner status: text -->
+    <string name="status_long_OK">OK</string>
+    <string name="status_long_DNS">Ei lähtenyt</string>
+    <string name="status_long_DNF">Keskeytti</string>
+    <string name="status_long_MP">Hylätty</string>
+    <string name="status_long_DSQ">Hylätty</string>
+    <string name="status_long_out_of_time">Yliaika</string>
+    <string name="status_long_not_started_yet">--</string>
+    <string name="status_long_walk_over">Luovutusvoitto</string>
+    <string name="status_long_move_up">--</string>
+    <string name="status_long_Unknown">--</string>
+</resources>

@@ -182,7 +182,7 @@ fun ResultItemH(viewModel: CompetitionViewModel, result: RunnerResult, classResu
                 .padding(8.dp, 4.dp)
                 .fillMaxWidth()
         ) {
-            Column(modifier = Modifier.fillMaxHeight()) {
+            Column(modifier = Modifier.fillMaxHeight().align(Alignment.CenterVertically)) {
                 Spacer(modifier = Modifier.weight(1f))
                 CircleChar(result.getRankingStr(), result.getStatus())
                 Spacer(modifier = Modifier.weight(1f))

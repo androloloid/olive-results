@@ -1,0 +1,51 @@
+<!-- norwegian -->
+<resources>
+    <string name="app_name">O\'Live Results</string>
+    <string name="search">Søk</string>
+    <string name="start">Start</string>
+    <string name="clear">Tøm</string>
+    <string name="events">Arrangementer</string>
+    <string name="class_results">Klasseresultater</string>
+    <string name="club_results">Lagresultater</string>
+
+    <string name="no_results">Ingen resultater å vise</string>
+    <string name="no_competition_selected">Ingen arrangement valgt</string>
+
+    <!-- club -->
+    <string name="search_club">Søk etter lag</string>
+    <string name="select_club">"Velg et lag"</string>
+    <string name="enter_club">Skriv inn et lagnavn for å se resultater</string>
+    <string name="clubs_loaded">lag funnet</string>
+    <string name="loading_clubs">Laster inn lag...</string>
+    <string name="loading_results">Laster inn resultater...</string>
+    <!-- competition -->
+    <string name="loading_competitions">Laster inn arrangementer...</string>
+    <string name="refresh">Oppdater</string>
+
+    <!-- live result -->
+    <string name="select_class">"Velg en klasse"</string>
+
+    <!-- runner status: 3 letters max -->
+    <string name="status_OK">OK</string>
+    <string name="status_DNS">DNS</string>
+    <string name="status_DNF">DNF</string>
+    <string name="status_MP">Feil</string>
+    <string name="status_DSQ">Disk</string>
+    <string name="status_out_of_time">OOT</string>
+    <string name="status_not_started_yet">--</string>
+    <string name="status_walk_over">--</string>
+    <string name="status_move_up">--</string>
+    <string name="status_Unknown">--</string>
+
+    <!-- runner status: text -->
+    <string name="status_long_OK">OK</string>
+    <string name="status_long_DNS">Ikke startet</string>
+    <string name="status_long_DNF">Brutt</string>
+    <string name="status_long_MP">Feil post</string>
+    <string name="status_long_DSQ">Diskvalifisert</string>
+    <string name="status_long_out_of_time">Maksimaltid overskredet</string>
+    <string name="status_long_not_started_yet">--</string>
+    <string name="status_long_walk_over">Walk Over</string>
+    <string name="status_long_move_up">--</string>
+    <string name="status_long_Unknown">--</string>
+</resources>

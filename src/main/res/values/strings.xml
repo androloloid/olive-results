@@ -40,7 +40,7 @@
     <string name="status_long_OK">OK</string>
     <string name="status_long_DNS">Did Not Start</string>
     <string name="status_long_DNF">Did Not Finish</string>
-    <string name="status_long_MP">Mispunch</string>
+    <string name="status_long_MP">Missed Punch</string>
     <string name="status_long_DSQ">Disqualified</string>
     <string name="status_long_out_of_time">Out of Time</string>
     <string name="status_long_not_started_yet">--</string>

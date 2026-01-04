@@ -1,0 +1,51 @@
+<!-- czech -->
+<resources>
+    <string name="app_name">O\'Live Results</string>
+    <string name="search">Hledat</string>
+    <string name="start">Start</string>
+    <string name="clear">Vymazat</string>
+    <string name="events">Události</string>
+    <string name="class_results">Kategorie</string>
+    <string name="club_results">Týmové</string>
+
+    <string name="no_results">Žádné výsledky k zobrazení</string>
+    <string name="no_competition_selected">Není vybrána žádná událost</string>
+
+    <!-- club -->
+    <string name="search_club">Hledat tým</string>
+    <string name="select_club">"Vyberte tým"</string>
+    <string name="enter_club">Zadejte název týmu pro zobrazení výsledků</string>
+    <string name="clubs_loaded">týmy nalezeny</string>
+    <string name="loading_clubs">Načítání týmů...</string>
+    <string name="loading_results">Načítání výsledků...</string>
+    <!-- competition -->
+    <string name="loading_competitions">Načítání událostí...</string>
+    <string name="refresh">Aktualizovat</string>
+
+    <!-- live result -->
+    <string name="select_class">"Vyberte kategorii"</string>
+
+    <!-- runner status: 3 letters max -->
+    <string name="status_OK">OK</string>
+    <string name="status_DNS">DNS</string>
+    <string name="status_DNF">DNF</string>
+    <string name="status_MP">MP</string>
+    <string name="status_DSQ">DSK</string>
+    <string name="status_out_of_time">OOT</string>
+    <string name="status_not_started_yet">--</string>
+    <string name="status_walk_over">--</string>
+    <string name="status_move_up">--</string>
+    <string name="status_Unknown">--</string>
+
+    <!-- runner status: text -->
+    <string name="status_long_OK">OK</string>
+    <string name="status_long_DNS">Neodštartoval</string>
+    <string name="status_long_DNF">Nedokončil</string>
+    <string name="status_long_MP">Špatné razítko</string>
+    <string name="status_long_DSQ">Diskvalifikovaný</string>
+    <string name="status_long_out_of_time">Mimo čas</string>
+    <string name="status_long_not_started_yet">--</string>
+    <string name="status_long_walk_over">Bez soupeře</string>
+    <string name="status_long_move_up">--</string>
+    <string name="status_long_Unknown">--</string>
+</resources>

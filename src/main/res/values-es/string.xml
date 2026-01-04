@@ -1,0 +1,51 @@
+<!-- spanish -->
+<resources>
+    <string name="app_name">O\'Live Results</string>
+    <string name="search">Buscar</string>
+    <string name="start">Salida</string>
+    <string name="clear">Borrar</string>
+    <string name="events">Competicións</string>
+    <string name="class_results">Categorias</string>
+    <string name="club_results">Equipos</string>
+
+    <string name="no_results">No hay resultados</string>
+    <string name="no_competition_selected">No se ha seleccionado ningún competición</string>
+
+    <!-- club -->
+    <string name="search_club">Buscar equipo</string>
+    <string name="select_club">"Elija un equipo"</string>
+    <string name="enter_club">Introduce un nombre de equipo para ver los resultados</string>
+    <string name="clubs_loaded">equipos encontrados</string>
+    <string name="loading_clubs">Cargando equipos...</string>
+    <string name="loading_results">Cargando resultados...</string>
+    <!-- competition -->
+    <string name="loading_competitions">Cargando eventos...</string>
+    <string name="refresh">Actualizar</string>
+
+    <!-- live result -->
+    <string name="select_class">"Elija una categoría"</string>
+
+    <!-- runner status: 3 letters max -->
+    <string name="status_OK">OK</string>
+    <string name="status_DNS">NS</string>
+    <string name="status_DNF">ABD</string>
+    <string name="status_MP">ET</string>
+    <string name="status_DSQ">DSC</string>
+    <string name="status_out_of_time">F/T</string>
+    <string name="status_not_started_yet">--</string>
+    <string name="status_walk_over">--</string>
+    <string name="status_move_up">--</string>
+    <string name="status_Unknown">--</string>
+
+    <!-- runner status: text -->
+    <string name="status_long_OK">OK</string>
+    <string name="status_long_DNS">No Sale</string>
+    <string name="status_long_DNF">Abandona</string>
+    <string name="status_long_MP">Error Tarjeta</string>
+    <string name="status_long_DSQ">Descalificado</string>
+    <string name="status_long_out_of_time">Fuera de Tiempo</string>
+    <string name="status_long_not_started_yet">--</string>
+    <string name="status_long_walk_over">Paseo</string>
+    <string name="status_long_move_up">--</string>
+    <string name="status_long_Unknown">--</string>
+</resources>

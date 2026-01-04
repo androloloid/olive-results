@@ -127,7 +127,7 @@ fun CompetitionScreen(navController: NavController, viewModel: CompetitionViewMo
                 )
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             CompetitionList(
                 competitions = viewModel.competitions,

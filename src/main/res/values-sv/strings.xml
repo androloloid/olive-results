@@ -1,0 +1,51 @@
+<!-- swedish -->
+<resources>
+    <string name="app_name">O\'Live Results</string>
+    <string name="search">Sök</string>
+    <string name="start">Start</string>
+    <string name="clear">Rensa</string>
+    <string name="events">Tävlingar</string>
+    <string name="class_results">Klassresultat</string>
+    <string name="club_results">Lagresultat</string>
+
+    <string name="no_results">Inga resultat att visa</string>
+    <string name="no_competition_selected">Ingen tävling vald</string>
+
+    <!-- club -->
+    <string name="search_club">Sök lag</string>
+    <string name="select_club">"Välj ett lag"</string>
+    <string name="enter_club">Ange ett lagnamn för att se resultat</string>
+    <string name="clubs_loaded">lag hittades</string>
+    <string name="loading_clubs">Laddar lag...</string>
+    <string name="loading_results">Laddar resultat...</string>
+    <!-- competition -->
+    <string name="loading_competitions">Laddar tävlingar...</string>
+    <string name="refresh">Uppdatera</string>
+
+    <!-- live result -->
+    <string name="select_class">"Välj en klass"</string>
+
+    <!-- runner status: 3 letters max -->
+    <string name="status_OK">OK</string>
+    <string name="status_DNS">DNS</string>
+    <string name="status_DNF">DNF</string>
+    <string name="status_MP">MP</string>
+    <string name="status_DSQ">DSQ</string>
+    <string name="status_out_of_time">OOT</string>
+    <string name="status_not_started_yet">--</string>
+    <string name="status_walk_over">--</string>
+    <string name="status_move_up">--</string>
+    <string name="status_Unknown">--</string>
+
+    <!-- runner status: text -->
+    <string name="status_long_OK">OK</string>
+    <string name="status_long_DNS">Ej Startad</string>
+    <string name="status_long_DNF">Brutit</string>
+    <string name="status_long_MP">Felstämpling</string>
+    <string name="status_long_DSQ">Diskvalificerad</string>
+    <string name="status_long_out_of_time">Maxtid överskriden</string>
+    <string name="status_long_not_started_yet">--</string>
+    <string name="status_long_walk_over">Walk Over</string>
+    <string name="status_long_move_up">--</string>
+    <string name="status_long_Unknown">--</string>
+</resources>

@@ -1,0 +1,51 @@
+<!-- german -->
+<resources>
+    <string name="app_name">O\'Live Results</string>
+    <string name="search">Suchen</string>
+    <string name="start">Start</string>
+    <string name="clear">Löschen</string>
+    <string name="events">Veranstaltungen</string>
+    <string name="class_results">Klassenergebnisse</string>
+    <string name="club_results">Teamergebnisse</string>
+
+    <string name="no_results">Keine Ergebnisse zum Anzeigen</string>
+    <string name="no_competition_selected">Keine Veranstaltung ausgewählt</string>
+
+    <!-- club -->
+    <string name="search_club">Team suchen</string>
+    <string name="select_club">"Team auswählen"</string>
+    <string name="enter_club">Geben Sie einen Teamnamen ein, um die Ergebnisse anzuzeigen</string>
+    <string name="clubs_loaded">Teams gefunden</string>
+    <string name="loading_clubs">Lade Teams...</string>
+    <string name="loading_results">Lade Ergebnisse...</string>
+    <!-- competition -->
+    <string name="loading_competitions">Lade Veranstaltungen...</string>
+    <string name="refresh">Aktualisieren</string>
+
+    <!-- live result -->
+    <string name="select_class">"Klasse auswählen"</string>
+
+    <!-- runner status: 3 letters max -->
+    <string name="status_OK">OK</string>
+    <string name="status_DNS">DNS</string>
+    <string name="status_DNF">ABD</string>
+    <string name="status_MP">Fehl</string>
+    <string name="status_DSQ">Disq</string>
+    <string name="status_out_of_time">A Z</string>
+    <string name="status_not_started_yet">--</string>
+    <string name="status_walk_over">--</string>
+    <string name="status_move_up">--</string>
+    <string name="status_Unknown">--</string>
+
+    <!-- runner status: text -->
+    <string name="status_long_OK">OK</string>
+    <string name="status_long_DNS">Nicht gestartet</string>
+    <string name="status_long_DNF">Aufgabe</string>
+    <string name="status_long_MP">Fehlstempel</string>
+    <string name="status_long_DSQ">Disqualifiziert</string>
+    <string name="status_long_out_of_time">Außerhalb der Zeit</string>
+    <string name="status_long_not_started_yet">--</string>
+    <string name="status_long_walk_over">Walk Over</string>
+    <string name="status_long_move_up">--</string>
+    <string name="status_long_Unknown">--</string>
+</resources>

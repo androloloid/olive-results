@@ -75,8 +75,8 @@ class LiveResultReq {
             if (jsonString == null) {
                 return Competitions(emptyList())
             }
-            println("getCompetitions")
-            println(jsonString)
+            //println("getCompetitions")
+            //println(jsonString)
             //saveJsonToFile(jsonString, "competitions.json")
             jsonString = fixJsonStringBeforeDecode(jsonString)
             // Create a Json instance that ignores unknown keys in the JSON input.
@@ -99,8 +99,7 @@ class LiveResultReq {
             if (jsonString == null) {
                 return Competition(-1, "", "", "", 0)
             }
-            println("getCompetitionInfo")
-            println(jsonString)
+            //println("getCompetitionInfo")
             //println(jsonString)
             // Create a Json instance that ignores unknown keys in the JSON input.
             // This makes parsing more robust if the API adds new fields in the future.
@@ -120,8 +119,8 @@ class LiveResultReq {
             if (jsonString == null) {
                 return LastPassing("Error", emptyList(), "")
             }
-            println("getLastPassing")
-            println(jsonString)
+            //println("getLastPassing")
+            //println(jsonString)
             jsonString = fixJsonStringBeforeDecode(jsonString)
             if (jsonString.contains("\"status\": \"NOT MODIFIED\"")) {
                 return LastPassing("NOT MODIFIED", emptyList(), lastHash)
@@ -142,8 +141,8 @@ class LiveResultReq {
             if (jsonString == null) {
                 return CompetitionClasses("Error", emptyList(), "")
             }
-            println("getClasses")
-            println(jsonString)
+            //println("getClasses")
+            //println(jsonString)
             jsonString = fixJsonStringBeforeDecode(jsonString)
             if (jsonString.contains("\"status\": \"NOT MODIFIED\"")) {
                 return CompetitionClasses("NOT MODIFIED", emptyList(), lastHash)
@@ -165,8 +164,8 @@ class LiveResultReq {
             if (jsonString == null) {
                 return ClassResults("Error", "", emptyList(), emptyList(), hash = "")
             }
-            println("getClassResults")
-            println(jsonString)
+            //println("getClassResults")
+            //println(jsonString)
             // replace the string "class:" by "className:" in the jsonString
             jsonString = fixJsonStringBeforeDecode(jsonString)
             if (jsonString.contains("\"status\": \"NOT MODIFIED\"")) {
@@ -190,8 +189,8 @@ class LiveResultReq {
             if (jsonString == null) {
                 return ClubResults("Error", "", emptyList(), hash = "")
             }
-            println("getClubResults")
-            println(jsonString)
+            //println("getClubResults")
+            //println(jsonString)
             jsonString = fixJsonStringBeforeDecode(jsonString)
             if (jsonString.contains("\"status\": \"NOT MODIFIED\"")) {
                 return ClubResults("NOT MODIFIED", "", emptyList(), hash = "")
