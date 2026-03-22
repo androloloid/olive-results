@@ -85,7 +85,7 @@ fun ClubResultsScreen(navController: NavController, viewModel: CompetitionViewMo
             }
         }
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).padding(8.dp)) {
+        Column(modifier = Modifier.padding(padding).padding(horizontal = 8.dp, vertical = 0.dp)) {
             ClubResultsContent(viewModel, searchQuery, sortMode, onSearchQueryChange = { searchQuery = it })
         }
     }
@@ -121,7 +121,7 @@ private fun ClubResultsContent(
         }
 
 
-        Spacer(Modifier.height(16.dp))
+        //Spacer(Modifier.height(16.dp))
     }
     MainContent(viewModel, sortMode)
 }
@@ -192,7 +192,7 @@ private fun ClubSelectorDropdown(viewModel: CompetitionViewModel) {
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = !expanded },
-        modifier = Modifier.padding(top = 8.dp),
+        modifier = Modifier.padding(top = 0.dp),
     ) {
         TextField(
             readOnly = true,

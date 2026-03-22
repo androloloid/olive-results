@@ -29,6 +29,7 @@ import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.int
 
+
 @Serializable(with = MyIntSerializer::class)
 @JvmInline
 value class MyTime(val value: Int) {

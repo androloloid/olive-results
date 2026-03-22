@@ -24,7 +24,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.viewModelScope
+import com.androloloid.oliveresults.data.CategoryReq
 import com.androloloid.oliveresults.data.ClassResults
 import com.androloloid.oliveresults.data.Competition
 import com.androloloid.oliveresults.data.CompetitionClass
@@ -38,13 +43,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.max
 
-class CompetitionViewModel(application: Application) : AndroidViewModel(application) {
+class CompetitionViewModel(application: Application) : AndroidViewModel(application), LifecycleEventObserver {
     private val REFRESH_TIME = 200 // *0.1s
     private var refreshTime by mutableStateOf(-1)
     // getRefreshProgress return a pair of (currentProgress, lastRefreshTime)
     var lastRefreshTime by mutableStateOf("")
 
     private val sharedPreferences = application.getSharedPreferences("LiveResultPrefs", Context.MODE_PRIVATE)
+
+    private var categories = CategoryReq()
 
     var hasShownToast by mutableStateOf(false)
 
@@ -90,6 +97,7 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
         private set
 
 
+
     fun init() {
         if (competitions.competitions.isEmpty()) {
             loadCompetitions()
@@ -101,6 +109,22 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
         selectedCompetitionId = sharedPreferences.getInt("selectedCompetitionId", 0)
         selectedClassNamePreference = sharedPreferences.getString("selectedClassName", "") ?: ""
         selectedClubName = sharedPreferences.getString("selectedClubName", "") ?: ""
+        
+        // Observe lifecycle to reset refreshTime when coming back from background/sleep
+        // LifecycleEventObserver is compatible with Java 8/API 24+ and lifecycle 2.6.x+
+        ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+    }
+
+    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+        if (event == Lifecycle.Event.ON_START) {
+            // Reset refreshTime when the application returns to the foreground (out of sleep mode)
+            refreshTime = -1
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        ProcessLifecycleOwner.get().lifecycle.removeObserver(this)
     }
 
     fun loadCompetitions() {
@@ -129,6 +153,7 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
 
         // reset
         selectedCompetition = competition
+        categories.setYear(competition.getYear())
         selectedCompetitionId = competition.id
         selectedClass = null
         clubs.clear()
@@ -207,10 +232,12 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
         viewModelScope.launch {
             selectedCompetition?.let { competition ->
                 selectedClass?.let { competitionClass ->
-                    val newClassResults = LiveResultReq().getClassResults(competition.id,
+                    var newClassResults = LiveResultReq().getClassResults(competition.id,
                         competitionClass.className,
                         classResults?.hash?:"")
                     if (newClassResults.status == "OK") {
+                        newClassResults.fixRankingErrors()
+                        newClassResults.updateCategories(categories)
                         classResults = newClassResults
                     }
                     lastRefreshTime = java.time.LocalTime.now().toString()
@@ -296,6 +323,7 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
                     if (tmpSelectedClubs.size == 1 &&  selectedClubsResults.size == 1) {
                         val result = LiveResultReq().getClubResults(competition.id, clubName, lastClubResultHash)
                         if (result.status == "OK") {
+                            result.updateCategories(categories)
                             tmpSelectedClubsResults.addAll(result.results)
                         } else {
                             tmpSelectedClubsResults = selectedClubsResults.toMutableList()
@@ -303,6 +331,7 @@ class CompetitionViewModel(application: Application) : AndroidViewModel(applicat
                         lastClubResultHash = result.hash
                     } else {
                         val result = LiveResultReq().getClubResults(competition.id, clubName, "")
+                        result.updateCategories(categories)
                         tmpSelectedClubsResults.addAll(result.results)
                         lastClubResultHash = ""
                     }

@@ -243,8 +243,12 @@ fun NameCLubColumn(modifier: Modifier, result: RunnerResult, classResults: Class
     Column(modifier = modifier) {
         Row(modifier = Modifier) {
             val name = toLowerCamelCase(result.getName())
+            var category = ""
+            if (classResults != null && result.category != null) {
+                category = " - " + result.category
+            }
             Text(
-                text = name,
+                text = name+ category,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 fontWeight = FontWeight.Bold

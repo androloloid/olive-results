@@ -19,6 +19,7 @@ not, see <https://www.gnu.org/licenses/>
 package com.androloloid.oliveresults.data
 
 import android.annotation.SuppressLint
+import androidx.core.text.isDigitsOnly
 import kotlinx.serialization.Serializable
 import java.util.Locale
 import java.time.LocalDate
@@ -72,6 +73,11 @@ data class Competition(
         val today = LocalDate.now()
         val eventDate = LocalDate.parse(date)
         return eventDate.isEqual(today)
+    }
+
+    fun getYear(): Int {
+        val eventDate = LocalDate.parse(date)
+        return eventDate.year
     }
 
     fun isNMonthOld(numMonths:Long=1) : Boolean {
@@ -223,9 +229,34 @@ data class ClassResults(
     val status: String,
     val className: String,
     val splitcontrols: List<SplitControl>,
-    val results: List<RunnerResult>,
+    var results: List<RunnerResult>,
     val hash: String)
 {
+    // update the ranking
+    fun fixRankingErrors() {
+        var prevRanking = "1"
+        for (i in results.indices) {
+            if (results[i].place.isDigitsOnly() && results[i].getStatus() == 0) {
+                prevRanking = results[i].place
+            }
+            if (i > 0 && results[i].place == "=" && results[i].getStatus() == 0) {
+                results[i].place = prevRanking
+            }
+        }
+    }
+    private fun getRunnerNames() : List<String> {
+        val runnerNames = mutableListOf<String>()
+        for (r in results) {
+            runnerNames.add(r.getName())
+        }
+        return runnerNames
+    }
+    suspend fun updateCategories(categoryReq : CategoryReq) {
+        categoryReq.fetchCategories(getRunnerNames())
+        for (r in results) {
+            r.category = categoryReq.getCategory(r.getName())
+        }
+    }
 }
 
 @SuppressLint("UnsafeOptInUsageError")
@@ -236,6 +267,19 @@ data class ClubResults(
     val results: List<RunnerResult>,
     val hash: String)
 {
+    private fun getRunnerNames() : List<String> {
+        val runnerNames = mutableListOf<String>()
+        for (r in results) {
+            runnerNames.add(r.getName())
+        }
+        return runnerNames
+    }
+    suspend fun updateCategories(categoryReq : CategoryReq) {
+        categoryReq.fetchCategories(getRunnerNames())
+        for (r in results) {
+            r.category = categoryReq.getCategory(r.getName())
+        }
+    }
 }
 @SuppressLint("UnsafeOptInUsageError")
 @Serializable
@@ -253,10 +297,11 @@ class Split(val code: String,
 @SuppressLint("UnsafeOptInUsageError")
 @Serializable
 data class RunnerResult(
-    private val place: String,
+    var place: String,
     private val name: String,
     val clubName: String,
     val className: String? = null,
+    var category: String? = null,
     private val result: String,
     private val status: Long,
     private val timeplus: String,
