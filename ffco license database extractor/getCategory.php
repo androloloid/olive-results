@@ -146,6 +146,56 @@ function normalize_name_key($name) {
     return $s;
 }
 
+function swap_first_last_name_order($name) {
+    $s = trim((string)$name);
+    if ($s === '') return $s;
+
+    // Split by whitespace and swap first/last token positions.
+    $parts = preg_split('/\s+/', $s);
+    if (!is_array($parts) || count($parts) < 2) {
+        return $s;
+    }
+
+    $first = $parts[0];
+    $lastIndex = count($parts) - 1;
+    $last = $parts[$lastIndex];
+
+    $middle = array();
+    if ($lastIndex > 1) {
+        $middle = array_slice($parts, 1, $lastIndex - 1);
+    }
+
+    $swappedParts = array_merge(array($last), $middle, array($first));
+    return implode(' ', $swappedParts);
+}
+
+function generate_swapped_name_keys($name) {
+    $keys = array();
+    $s = trim((string)$name);
+    if ($s === '') return $keys;
+
+    $parts = preg_split('/\s+/', $s);
+    if (!is_array($parts)) return $keys;
+    $count = count($parts);
+    if ($count < 2) return $keys;
+
+    // Try every split point:
+    // [0..i-1] [i..end] -> [i..end] [0..i-1]
+    // This supports compound first/last names such as:
+    // "Clement Du Pasquier" <-> "Du Pasquier Clement".
+    for ($i = 1; $i < $count; $i++) {
+        $left = array_slice($parts, 0, $i);
+        $right = array_slice($parts, $i);
+        $candidate = implode(' ', array_merge($right, $left));
+        $k = normalize_name_key($candidate);
+        if ($k !== '') {
+            $keys[$k] = true; // deduplicate
+        }
+    }
+
+    return array_keys($keys);
+}
+
 function parse_request_payload_compat($rawInput) {
     // If json_decode exists, prefer it.
     if (function_exists('json_decode')) {
@@ -280,7 +330,25 @@ foreach ($names as $n) {
     if (array_key_exists($nameKey, $byName)) {
         $categories[] = $byName[$nameKey];
     } else {
-        $categories[] = null;
+        $foundCategory = null;
+        $swappedKeys = generate_swapped_name_keys((string)$n);
+        foreach ($swappedKeys as $swappedKey) {
+            if (array_key_exists($swappedKey, $byName)) {
+                $foundCategory = $byName[$swappedKey];
+                break;
+            }
+        }
+        if ($foundCategory !== null) {
+            $categories[] = $foundCategory;
+        } else {
+            $swappedName = swap_first_last_name_order((string)$n);
+            $swappedKey = normalize_name_key($swappedName);
+            if (array_key_exists($swappedKey, $byName)) {
+                $categories[] = $byName[$swappedKey];
+            } else {
+                $categories[] = null;
+            }
+        }
     }
 }
 
