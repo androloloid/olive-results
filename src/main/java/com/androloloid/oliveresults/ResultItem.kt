@@ -64,6 +64,10 @@ import kotlin.math.ceil
 
 fun toLowerCamelCase(input: String): String {
     val words = input.lowercase().split(' ').joinToString(" ") {
+        // Capitalize the first letter of each word after a blank
+        if (it.isNotEmpty()) it.replaceFirstChar(Char::titlecaseChar) else it
+    }.split('-').joinToString("-") {
+        // Capitalize the first letter of each word after -
         if (it.isNotEmpty()) it.replaceFirstChar(Char::titlecaseChar) else it
     }
     return words
@@ -303,7 +307,7 @@ fun TimeColumn(result: RunnerResult, competition : Competition?, displayStartIfN
         horizontalAlignment = Alignment.CenterHorizontally
     )
     {
-        println("name=${result.getName()}, status=${result.getStatus()}, result=${result.getResult()}, runTime = ${result.getTimeFromStart(competition)}, getLongStatusStringResource(result.getStatus())= ${getLongStatusStringResource(result.getStatus())}")
+        //println("name=${result.getName()}, status=${result.getStatus()}, result=${result.getResult()}, runTime = ${result.getTimeFromStart(competition)}, getLongStatusStringResource(result.getStatus())= ${getLongStatusStringResource(result.getStatus())}")
         if (result.getStatus() == 0) {
             Text(
                 result.getResult(),

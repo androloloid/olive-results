@@ -25,12 +25,18 @@ import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 /**
  * CategoryReq handles fetching and caching runner categories from the server.
  */
 class CategoryReq {
-    private val client = OkHttpClient()
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(5, TimeUnit.SECONDS)
+        .readTimeout(5, TimeUnit.SECONDS)
+        .writeTimeout(5, TimeUnit.SECONDS)
+        .build()
+        
     private val url = "http://androloloid.free.fr/oliveresults/ffco_licenses/getCategory.php"
 
     // categoryMap return the category for a given runner name for the active year. It is invalid
@@ -69,7 +75,7 @@ class CategoryReq {
         formBuilder.add("year", year.toString())
         val formBody = formBuilder.build()
 
-        println("Fetching categories for $namesToFetch")
+        //println("Fetching categories for $namesToFetch")
         val request = Request.Builder()
             .url(url)
             .post(formBody)
@@ -91,7 +97,7 @@ class CategoryReq {
                         namesToFetch.zip(categories).forEach { (name, category) ->
                             categoryMap[name] = category
                         }
-                        println("Fetched categories: $categories")
+                        //println("Fetched categories: $categories")
                     } else {
                         println("Error fetching categories: ${response.code}")
                     }
